@@ -20,7 +20,8 @@ import {
   HelpCircle,
   CheckCircle2,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Stamp
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -55,6 +56,7 @@ export default function Sidebar({
       title: "DOCUMENT MANAGEMENT",
       items: [
         { id: 'documents', label: 'All Documents', icon: FileText, badge: documentsCount.toLocaleString() },
+        { id: 'approvals-inbox', label: 'Approvals Inbox', icon: Stamp, badge: 'Digital Sig ✍️' },
         { id: 'shared', label: 'Shared With Me', icon: Share2 },
         { id: 'requests', label: 'Document Requests', icon: FileQuestion, badge: (documentsCount > 0 ? Math.ceil(documentsCount * 0.1) : 0).toString() },
         { id: 'trash', label: 'Trash / Archives', icon: Trash2 }

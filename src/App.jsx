@@ -23,6 +23,7 @@ import SecurityLogsView from './components/Security/SecurityLogsView';
 import ReportsView from './components/Reports/ReportsView';
 import PublicVerificationView from './components/Security/PublicVerificationView';
 import ChainOfCustodyView from './components/ChainOfCustody/ChainOfCustodyView';
+import ApprovalInboxView from './components/Approvals/ApprovalInboxView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -331,6 +332,14 @@ export default function App() {
       case 'chain-of-custody':
         return (
           <ChainOfCustodyView 
+            documents={documents}
+            onShowToast={showToast}
+            onSelectDocument={(d) => setSelectedDocument(d)}
+          />
+        );
+      case 'approvals-inbox':
+        return (
+          <ApprovalInboxView 
             documents={documents}
             onShowToast={showToast}
             onSelectDocument={(d) => setSelectedDocument(d)}
