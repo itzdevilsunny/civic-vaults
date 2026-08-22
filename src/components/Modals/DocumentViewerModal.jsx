@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Download, 
@@ -17,8 +17,16 @@ import {
   Shield,
   Clock,
   Printer,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Sparkles,
+  Cpu,
+  Target,
+  FileCode,
+  AlertOctagon,
+  UserCheck
 } from 'lucide-react';
+
+import { analyzeForensicDocument } from '../../lib/aiForensicEngine';
 
 export default function DocumentViewerModal({ document, isOpen, onClose, onShowToast }) {
   const [activeTab, setActiveTab] = useState('metadata');
@@ -26,6 +34,20 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
   const [showWatermark, setShowWatermark] = useState(true);
   const [isHashVerified, setIsHashVerified] = useState(true);
   const [showCertModal, setShowCertModal] = useState(false);
+
+  // AI Forensic State
+  const [aiData, setAiData] = useState(null);
+  const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'aiInsights' && !aiData) {
+      setIsAnalyzingAi(true);
+      analyzeForensicDocument(document.name, document.name).then(res => {
+        setAiData(res);
+        setIsAnalyzingAi(false);
+      });
+    }
+  }, [activeTab, document, aiData]);
 
   if (!isOpen || !document) return null;
 
@@ -102,15 +124,17 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
         {/* Tab Navigation */}
         <div style={{
           display: 'flex',
-          gap: '1rem',
+          gap: '0.5rem',
           padding: '0.75rem 1.5rem',
           backgroundColor: 'var(--bg-subtle)',
-          borderBottom: '1px solid var(--border-color)'
+          borderBottom: '1px solid var(--border-color)',
+          overflowX: 'auto'
         }}>
           {[
             { id: 'metadata', label: 'Document Metadata', icon: FileText },
+            { id: 'aiInsights', label: 'AI Forensic Intelligence (USP 💎)', icon: Sparkles, badge: 'AI' },
             { id: 'chainOfCustody', label: 'Chain of Custody (USP 🥇)', icon: ShieldCheck, badge: document.chainOfCustody?.length },
-            { id: 'versions', label: 'Version History', icon: History },
+            { id: 'versions', label: 'Version Control', icon: History },
             { id: 'signatures', label: 'Digital Signatures', icon: Stamp }
           ].map(tab => {
             const Icon = tab.icon;
@@ -131,7 +155,8 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                   cursor: 'pointer',
                   backgroundColor: isActive ? 'var(--bg-surface)' : 'transparent',
                   color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                  boxShadow: isActive ? 'var(--shadow-sm)' : 'none'
+                  boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 <Icon size={15} />
@@ -153,7 +178,7 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
           {activeTab === 'metadata' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.5rem' }}>
               
-              {/* Document Preview Box with Secure Watermarking Overlay */}
+              {/* Document Preview Box */}
               <div style={{
                 position: 'relative',
                 border: '1px solid var(--border-color)',
@@ -167,7 +192,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                 overflow: 'hidden',
                 padding: '2rem'
               }}>
-                {/* Watermark Overlay Generator */}
                 {showWatermark && (
                   <div style={{
                     position: 'absolute',
@@ -200,7 +224,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                   Preview Mode ({document.pages || 12} Pages • {document.size})
                 </p>
 
-                {/* Watermark Toggle Switch */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -224,10 +247,8 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                 </div>
               </div>
 
-              {/* Sidebar Metadata & Hash Inspector */}
+              {/* Sidebar Metadata */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                
-                {/* SHA-256 Integrity Verification Box */}
                 <div style={{
                   padding: '1rem',
                   borderRadius: 'var(--radius-md)',
@@ -244,7 +265,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                       disabled={isVerifyingHash}
                       className="cv-btn-icon"
                       style={{ padding: '0.2rem' }}
-                      title="Re-run SHA-256 Checksum Verification"
                     >
                       <RefreshCw size={14} className={isVerifyingHash ? 'animate-spin' : ''} />
                     </button>
@@ -266,7 +286,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                   </div>
                 </div>
 
-                {/* Metadata Details Table */}
                 <div className="cv-card" style={{ padding: '1rem', fontSize: '0.8125rem' }}>
                   <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-muted)' }}>
                     DOCUMENT METADATA
@@ -288,14 +307,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                       <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Upload Date:</span>
                       <div style={{ fontWeight: 600 }}>{document.uploadDate}</div>
                     </div>
-                    <div>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Current Version:</span>
-                      <div style={{ fontWeight: 600 }}>{document.version}</div>
-                    </div>
-                    <div>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Total Accesses:</span>
-                      <div style={{ fontWeight: 600 }}>{document.accessCount || 48} times</div>
-                    </div>
                   </div>
                 </div>
 
@@ -304,7 +315,149 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
             </div>
           )}
 
-          {/* TAB 2: CHAIN OF CUSTODY (USP 🥇) */}
+          {/* TAB 2: AI FORENSIC INTELLIGENCE (USP 💎) */}
+          {activeTab === 'aiInsights' && (
+            <div>
+              {isAnalyzingAi ? (
+                <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
+                  <Cpu size={40} className="animate-spin" style={{ color: 'var(--accent-primary)', marginBottom: '1rem' }} />
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    CaseVault AI Forensic NLP Engine Processing...
+                  </h3>
+                  <p style={{ fontSize: '0.8125rem', marginTop: '0.35rem' }}>
+                    Extracting Suspect Entities, Bharatiya Nyaya Sanhita (BNS) Laws, & Asset Traces...
+                  </p>
+                </div>
+              ) : aiData ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  
+                  {/* AI Risk Score Banner */}
+                  <div style={{
+                    padding: '1.25rem',
+                    borderRadius: 'var(--radius-lg)',
+                    background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.15) 100%)',
+                    border: '1px solid var(--accent-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--accent-primary)',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.25rem',
+                        fontWeight: 900
+                      }}>
+                        {aiData.riskScore}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-primary)', letterSpacing: '0.05em' }}>
+                          FORENSIC CONFIDENCE & THREAT SCORE
+                        </div>
+                        <h3 style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                          {aiData.classification} (AI Confidence: {aiData.confidenceScore})
+                        </h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          Analyzed by {aiData.aiModelUsed} • {aiData.analysisTimestamp}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="cv-badge cv-badge-indigo" style={{ padding: '0.5rem 0.875rem', fontSize: '0.8125rem' }}>
+                      <Sparkles size={14} /> AI Parsed
+                    </span>
+                  </div>
+
+                  {/* Executive AI Summary Box */}
+                  <div className="cv-card" style={{ padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+                      <Cpu size={16} style={{ color: 'var(--accent-primary)' }} />
+                      <span>Executive Forensic AI Narrative Summary:</span>
+                    </div>
+                    <p style={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+                      {aiData.aiSummary}
+                    </p>
+                  </div>
+
+                  {/* 2 Grid Columns for Entities & BNS Statutory Laws */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                    
+                    {/* Suspects & Persons of Interest Box */}
+                    <div className="cv-card" style={{ padding: '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.875rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                        <Target size={16} style={{ color: 'var(--danger)' }} />
+                        <span>Extracted Suspects & POIs:</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {aiData.extractedEntities.suspects.map((s, idx) => (
+                          <div key={idx} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 0.75rem',
+                            borderRadius: 'var(--radius-md)',
+                            backgroundColor: 'var(--danger-light)',
+                            color: 'var(--danger-dark)',
+                            fontSize: '0.8125rem',
+                            fontWeight: 700
+                          }}>
+                            <UserCheck size={14} />
+                            <span>{s}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        <strong>Financial Asset Trace:</strong> {aiData.extractedEntities.financialTrace}
+                      </div>
+                    </div>
+
+                    {/* Extracted Statutory Laws (BNS 2023 / IT Act) */}
+                    <div className="cv-card" style={{ padding: '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '0.875rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                        <FileCode size={16} style={{ color: 'var(--accent-primary)' }} />
+                        <span>Mapped Bharatiya Nyaya Sanhita (BNS) Laws:</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {aiData.extractedEntities.bnsSections.map((bns, idx) => (
+                          <div key={idx} style={{
+                            padding: '0.5rem 0.75rem',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-subtle)'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontWeight: 800, fontSize: '0.8125rem', color: 'var(--accent-primary)' }}>
+                                {bns.section}
+                              </span>
+                              <span className={`cv-badge ${bns.severity === 'CRITICAL' ? 'cv-badge-red' : 'cv-badge-amber'}`}>
+                                {bns.severity}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                              {bns.title}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {/* TAB 3: CHAIN OF CUSTODY */}
           {activeTab === 'chainOfCustody' && (
             <div>
               <div style={{
@@ -329,7 +482,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                 </span>
               </div>
 
-              {/* Chain of Custody Timeline Stream */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingLeft: '1rem', borderLeft: '2px solid var(--accent-primary)' }}>
                 {document.chainOfCustody?.map((step, idx) => (
                   <div 
@@ -374,7 +526,7 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
             </div>
           )}
 
-          {/* TAB 3: VERSION HISTORY */}
+          {/* TAB 4: VERSION HISTORY */}
           {activeTab === 'versions' && (
             <div>
               <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1rem' }}>
@@ -403,21 +555,13 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                         {ver.notes} (By {ver.uploader})
                       </p>
                     </div>
-                    {idx !== 0 && (
-                      <button 
-                        onClick={() => onShowToast(`Restored version ${ver.version} as primary`, 'info')}
-                        className="cv-btn cv-btn-secondary cv-btn-sm"
-                      >
-                        Restore Version
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* TAB 4: DIGITAL SIGNATURES */}
+          {/* TAB 5: DIGITAL SIGNATURES */}
           {activeTab === 'signatures' && (
             <div>
               <div style={{
@@ -440,18 +584,6 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     Signing Timestamp: {document.digitalSignature?.date || "2026-08-22 11:30 IST"}
                   </p>
-                  <div style={{
-                    marginTop: '0.5rem',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    backgroundColor: 'var(--bg-surface)',
-                    padding: '0.35rem 0.6rem',
-                    borderRadius: '4px',
-                    display: 'inline-block',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    Signature Hash: {document.digitalSignature?.signatureHash || "SIG-99812-EC-2026"}
-                  </div>
                 </div>
               </div>
             </div>
