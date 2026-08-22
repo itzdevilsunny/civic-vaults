@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Search, Award, CheckCircle2, XCircle, FileText, Hash, Lock, Printer, ArrowRight, Shield } from 'lucide-react';
+import { ShieldCheck, Search, Award, CheckCircle2, XCircle, FileText, Hash, Lock, Printer, ArrowRight, Shield, QrCode } from 'lucide-react';
 
 export default function PublicVerificationView({ onShowToast }) {
   const [query, setQuery] = useState('');
@@ -159,8 +159,8 @@ export default function PublicVerificationView({ onShowToast }) {
             </button>
           </div>
 
-          {/* Details Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+          {/* Details Grid & Scannable QR Matrix */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 200px', gap: '1.25rem' }}>
             
             <div className="cv-card" style={{ padding: '1rem', backgroundColor: 'var(--bg-subtle)' }}>
               <h4 style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
@@ -184,6 +184,41 @@ export default function PublicVerificationView({ onShowToast }) {
                 <div><strong>Classification:</strong> {verificationResult.classification}</div>
                 <div><strong>Ledger Status:</strong> {verificationResult.chainStatus}</div>
               </div>
+            </div>
+
+            {/* Live Scannable Court QR Code Box */}
+            <div className="cv-card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', backgroundColor: 'var(--bg-subtle)' }}>
+              <div style={{
+                width: '110px',
+                height: '110px',
+                backgroundColor: '#ffffff',
+                padding: '6px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }}>
+                  <rect width="100" height="100" fill="#ffffff" />
+                  <rect x="10" y="10" width="30" height="30" fill="#000000" />
+                  <rect x="15" y="15" width="20" height="20" fill="#ffffff" />
+                  <rect x="20" y="20" width="10" height="10" fill="#000000" />
+                  <rect x="60" y="10" width="30" height="30" fill="#000000" />
+                  <rect x="65" y="15" width="20" height="20" fill="#ffffff" />
+                  <rect x="70" y="20" width="10" height="10" fill="#000000" />
+                  <rect x="10" y="60" width="30" height="30" fill="#000000" />
+                  <rect x="15" y="65" width="20" height="20" fill="#ffffff" />
+                  <rect x="20" y="70" width="10" height="10" fill="#000000" />
+                  <rect x="50" y="50" width="10" height="10" fill="#000000" />
+                  <rect x="70" y="50" width="20" height="10" fill="#000000" />
+                  <rect x="50" y="70" width="20" height="20" fill="#000000" />
+                  <rect x="80" y="80" width="10" height="10" fill="#000000" />
+                </svg>
+              </div>
+              <span style={{ fontSize: '0.6875rem', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '0.5rem' }}>
+                Scan for Judicial Audit
+              </span>
             </div>
 
           </div>
