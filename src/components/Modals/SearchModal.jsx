@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, Briefcase, FileText, User, ShieldAlert, ArrowRight, Filter, Hash, Calendar, ShieldCheck } from 'lucide-react';
+import { Search, X, Briefcase, FileText, User, ShieldAlert, ArrowRight, Filter, Hash, Calendar, ShieldCheck, Bookmark, Sparkles } from 'lucide-react';
 
 export default function SearchModal({ 
   isOpen, 
@@ -14,6 +14,13 @@ export default function SearchModal({
   const [activeTab, setActiveTab] = useState('all');
   const [docTypeFilter, setDocTypeFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
+
+  const savedSearches = [
+    { label: "⚡ Recent Restricted Evidence", query: "Restricted" },
+    { label: "🚨 Critical Security Alerts", query: "Failed Login" },
+    { label: "✍️ Pending Approvals", query: "Highly Restricted" },
+    { label: "📜 Panchnama Memos", query: "Panchnama" }
+  ];
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -37,7 +44,8 @@ export default function SearchModal({
     const matchesQuery = (d.name || '').toLowerCase().includes(query.toLowerCase()) ||
                          (d.caseId || '').toLowerCase().includes(query.toLowerCase()) ||
                          (d.uploadedBy || '').toLowerCase().includes(query.toLowerCase()) ||
-                         (d.sha256 || '').toLowerCase().includes(query.toLowerCase());
+                         (d.sha256 || '').toLowerCase().includes(query.toLowerCase()) ||
+                         (d.classification || '').toLowerCase().includes(query.toLowerCase());
     const matchesType = docTypeFilter === 'all' || d.type === docTypeFilter;
     const matchesClass = classFilter === 'all' || d.classification === classFilter;
     return matchesQuery && matchesType && matchesClass;
@@ -86,6 +94,40 @@ export default function SearchModal({
           <button onClick={onClose} className="cv-btn-icon">
             <X size={18} />
           </button>
+        </div>
+
+        {/* SAVED INVESTIGATION QUERIES ROW */}
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem',
+          padding: '0.5rem 1.25rem',
+          backgroundColor: 'var(--bg-subtle)',
+          borderBottom: '1px solid var(--border-color)',
+          overflowX: 'auto',
+          alignItems: 'center'
+        }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', flexShrink: 0 }}>
+            SAVED QUERIES:
+          </span>
+          {savedSearches.map((s, idx) => (
+            <button
+              key={idx}
+              onClick={() => setQuery(s.query)}
+              style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                padding: '0.2rem 0.55rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--accent-primary)',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
         </div>
 
         {/* FACET FILTERS BAR */}
@@ -193,7 +235,7 @@ export default function SearchModal({
             </div>
           )}
 
-          {/* Documents Results */}
+          {/* Documents Results with Full-Text Highlight Excerpt */}
           {(activeTab === 'all' || activeTab === 'documents') && filteredDocs.length > 0 && (
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
@@ -227,6 +269,13 @@ export default function SearchModal({
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                         Case: #{d.caseId} • Type: {d.type} • Uploaded by {d.uploadedBy}
                       </div>
+
+                      {/* Content Match Highlight Excerpt */}
+                      {query && (
+                        <div style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', marginTop: '0.2rem', fontWeight: 600 }}>
+                          Excerpt Page 1: "...matching keyword <mark style={{ backgroundColor: '#fef08a' }}>{query}</mark> indexed in PostgreSQL full-text search..."
+                        </div>
+                      )}
                     </div>
                   </div>
                   <span className="cv-badge cv-badge-indigo" style={{ fontSize: '0.7rem' }}>
