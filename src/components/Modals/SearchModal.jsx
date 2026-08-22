@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, Briefcase, FileText, User, ShieldAlert, ArrowRight } from 'lucide-react';
+import { Search, X, Briefcase, FileText, User, ShieldAlert, ArrowRight, Filter, Hash, Calendar, ShieldCheck } from 'lucide-react';
 
 export default function SearchModal({ 
   isOpen, 
@@ -12,6 +12,8 @@ export default function SearchModal({
 }) {
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [docTypeFilter, setDocTypeFilter] = useState('all');
+  const [classFilter, setClassFilter] = useState('all');
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -31,12 +33,15 @@ export default function SearchModal({
     (c.assignedTo || '').toLowerCase().includes(query.toLowerCase())
   );
 
-  const filteredDocs = documents.filter(d =>
-    (d.name || '').toLowerCase().includes(query.toLowerCase()) ||
-    (d.caseId || '').toLowerCase().includes(query.toLowerCase()) ||
-    (d.uploadedBy || '').toLowerCase().includes(query.toLowerCase()) ||
-    (d.type || '').toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredDocs = documents.filter(d => {
+    const matchesQuery = (d.name || '').toLowerCase().includes(query.toLowerCase()) ||
+                         (d.caseId || '').toLowerCase().includes(query.toLowerCase()) ||
+                         (d.uploadedBy || '').toLowerCase().includes(query.toLowerCase()) ||
+                         (d.sha256 || '').toLowerCase().includes(query.toLowerCase());
+    const matchesType = docTypeFilter === 'all' || d.type === docTypeFilter;
+    const matchesClass = classFilter === 'all' || d.classification === classFilter;
+    return matchesQuery && matchesType && matchesClass;
+  });
 
   const filteredLogs = securityLogs.filter(l =>
     (l.event || '').toLowerCase().includes(query.toLowerCase()) ||
@@ -64,7 +69,7 @@ export default function SearchModal({
           <Search size={20} style={{ color: 'var(--accent-primary)' }} />
           <input
             type="text"
-            placeholder="Search cases, documents, officers, logs (e.g. 2026-0789, FIR, Arjun)..."
+            placeholder="Advanced Search by keyword, SHA-256 hash, Case ID, Officer (e.g. 8F4A..., FIR)..."
             value={query}
             onChange={e => setQuery(e.target.value)}
             autoFocus
@@ -83,34 +88,65 @@ export default function SearchModal({
           </button>
         </div>
 
-        {/* Categories Tabs */}
+        {/* FACET FILTERS BAR */}
         <div style={{
           display: 'flex',
-          gap: '0.5rem',
-          padding: '0.75rem 1.25rem',
+          gap: '0.75rem',
+          padding: '0.625rem 1.25rem',
           backgroundColor: 'var(--bg-subtle)',
-          borderBottom: '1px solid var(--border-color)'
+          borderBottom: '1px solid var(--border-color)',
+          flexWrap: 'wrap',
+          alignItems: 'center'
         }}>
-          {['all', 'cases', 'documents', 'security'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '0.35rem 0.875rem',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                borderRadius: 'var(--radius-full)',
-                border: 'none',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                cursor: 'pointer',
-                backgroundColor: activeTab === tab ? 'var(--accent-primary)' : 'transparent',
-                color: activeTab === tab ? '#ffffff' : 'var(--text-secondary)'
-              }}
+          <div style={{ display: 'flex', gap: '0.4rem' }}>
+            {['all', 'cases', 'documents', 'security'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '0.3rem 0.75rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  borderRadius: 'var(--radius-full)',
+                  border: 'none',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  cursor: 'pointer',
+                  backgroundColor: activeTab === tab ? 'var(--accent-primary)' : 'var(--bg-surface)',
+                  color: activeTab === tab ? '#ffffff' : 'var(--text-secondary)'
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+            <select
+              value={docTypeFilter}
+              onChange={e => setDocTypeFilter(e.target.value)}
+              className="cv-select"
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
             >
-              {tab}
-            </button>
-          ))}
+              <option value="all">All Doc Types</option>
+              <option value="FIR / Complaints">FIR / Complaints</option>
+              <option value="Statements">Statements</option>
+              <option value="Evidence">Evidence</option>
+              <option value="Reports">Reports</option>
+            </select>
+
+            <select
+              value={classFilter}
+              onChange={e => setClassFilter(e.target.value)}
+              className="cv-select"
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+            >
+              <option value="all">All Classifications</option>
+              <option value="Highly Restricted">Highly Restricted</option>
+              <option value="Restricted">Restricted</option>
+              <option value="Internal Use">Internal Use</option>
+            </select>
+          </div>
         </div>
 
         {/* Results Body */}
@@ -245,7 +281,7 @@ export default function SearchModal({
               <Search size={36} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
               <p style={{ fontWeight: 600 }}>No live records found matching "{query}"</p>
               <p style={{ fontSize: '0.8125rem', marginTop: '0.25rem' }}>
-                Try searching by Case ID, Document name, Officer name, or IP address.
+                Try searching by Case ID, Document name, Officer name, or SHA-256 checksum.
               </p>
             </div>
           )}
