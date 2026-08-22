@@ -66,6 +66,7 @@ export default function Sidebar({
       title: "SECURITY & CONTROL",
       items: [
         { id: 'verify-portal', label: 'Public 65B Verifier', icon: ShieldCheck, badge: 'Sec 65B' },
+        { id: 'legal-hold', label: 'Legal Hold & Retention', icon: FolderLock, badge: 'Hold ⚖️' },
         { id: 'access-control', label: 'Access Control', icon: Lock },
         { id: 'audit-trail', label: 'Audit Trail', icon: History },
         { id: 'security-logs', label: 'Security Logs', icon: ShieldAlert, badge: securityLogsCount.toString(), alert: securityLogsCount > 0 }

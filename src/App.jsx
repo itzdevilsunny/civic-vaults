@@ -24,6 +24,7 @@ import ReportsView from './components/Reports/ReportsView';
 import PublicVerificationView from './components/Security/PublicVerificationView';
 import ChainOfCustodyView from './components/ChainOfCustody/ChainOfCustodyView';
 import ApprovalInboxView from './components/Approvals/ApprovalInboxView';
+import LegalHoldView from './components/LegalHold/LegalHoldView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -343,6 +344,14 @@ export default function App() {
             documents={documents}
             onShowToast={showToast}
             onSelectDocument={(d) => setSelectedDocument(d)}
+          />
+        );
+      case 'legal-hold':
+        return (
+          <LegalHoldView 
+            documents={documents}
+            cases={cases}
+            onShowToast={showToast}
           />
         );
       case 'documents':
