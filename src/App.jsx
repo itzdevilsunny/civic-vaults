@@ -32,6 +32,7 @@ import IntelligenceGraphView from './components/Intelligence/IntelligenceGraphVi
 import BackupView from './components/Backup/BackupView';
 import SystemHealthView from './components/Health/SystemHealthView';
 import CasePackageExportView from './components/Export/CasePackageExportView';
+import DocumentLifecycleView from './components/Lifecycle/DocumentLifecycleView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -53,6 +54,7 @@ const VIEW_ORDER = [
   'cases', 
   'intelligence-graph',
   'documents', 
+  'document-lifecycle',
   'case-package-export',
   'chain-of-custody', 
   'approvals-inbox', 
@@ -394,6 +396,13 @@ export default function App() {
         return (
           <IntelligenceGraphView 
             cases={cases}
+            documents={documents}
+            onShowToast={showToast}
+          />
+        );
+      case 'document-lifecycle':
+        return (
+          <DocumentLifecycleView 
             documents={documents}
             onShowToast={showToast}
           />

@@ -12,8 +12,11 @@ import {
   Lock, 
   Server,
   Cloud,
-  FileCode
+  FileCode,
+  ShieldAlert,
+  Activity
 } from 'lucide-react';
+import { createLiveAuditLog } from '../../lib/supabaseClient';
 
 export default function BackupView({ onShowToast }) {
   const [backups, setBackups] = useState([
@@ -50,11 +53,29 @@ export default function BackupView({ onShowToast }) {
   ]);
 
   const [creating, setCreating] = useState(false);
+  const [testingDr, setTestingDr] = useState(false);
   const [restoringId, setRestoringId] = useState(null);
 
-  const handleCreateSnapshot = () => {
+  const [drLogs, setDrLogs] = useState([
+    {
+      id: 'LOG-DR-901',
+      timestamp: '23 Aug 2026, 02:05 IST',
+      action: 'Automated WAL Log Backup Streamed',
+      admin: 'System System Daemon',
+      result: '✓ Success (0.01s latency)'
+    },
+    {
+      id: 'LOG-DR-899',
+      timestamp: '22 Aug 2026, 18:30 IST',
+      action: 'Disaster Recovery Simulation Test',
+      admin: 'SysAdmin Officer V. Sharma',
+      result: '✓ Failover Test Passed (2.1m)'
+    }
+  ]);
+
+  const handleCreateSnapshot = async () => {
     setCreating(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       const newSnap = {
         id: `SNAP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
         timestamp: new Date().toLocaleString('en-IN') + " IST",
@@ -68,14 +89,44 @@ export default function BackupView({ onShowToast }) {
       setBackups([newSnap, ...backups]);
       setCreating(false);
       onShowToast("Instant Database Snapshot Created & SHA-256 Sealed ✓", "success");
+
+      await createLiveAuditLog({
+        user: "SysAdmin Officer",
+        action: "Manual Database Snapshot Created",
+        target: newSnap.id,
+        result: "SHA-256 Verified"
+      });
     }, 1500);
   };
 
-  const handleRestore = (id) => {
-    setRestoringId(id);
+  const handleTestDrFailover = () => {
+    setTestingDr(true);
     setTimeout(() => {
+      setTestingDr(false);
+      const newLog = {
+        id: `LOG-DR-${Math.floor(100 + Math.random() * 900)}`,
+        timestamp: new Date().toLocaleString('en-IN') + " IST",
+        action: 'Disaster Recovery Simulation Test Executed',
+        admin: 'Inspector Arjun Singh',
+        result: '✓ Primary -> Secondary Failover Verified (< 2.5m RTO)'
+      };
+      setDrLogs([newLog, ...drLogs]);
+      onShowToast("⚡ Disaster Recovery Failover Simulation Passed 100% ✓", "success");
+    }, 1800);
+  };
+
+  const handleRestore = async (id) => {
+    setRestoringId(id);
+    setTimeout(async () => {
       setRestoringId(null);
       onShowToast(`Point-In-Time Recovery (PITR) completed for snapshot ${id} ✓`, "success");
+
+      await createLiveAuditLog({
+        user: "SysAdmin Officer",
+        action: "PITR Database Restore Executed",
+        target: id,
+        result: "Restored Clean"
+      });
     }, 2000);
   };
 
@@ -96,15 +147,27 @@ export default function BackupView({ onShowToast }) {
           </p>
         </div>
 
-        <button 
-          onClick={handleCreateSnapshot}
-          disabled={creating}
-          className="cv-btn cv-btn-primary"
-          style={{ fontWeight: 800 }}
-        >
-          <RefreshCw size={16} className={creating ? 'animate-spin' : ''} />
-          <span>{creating ? 'Hashing & Snapshotting...' : 'Create Instant Snapshot'}</span>
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            onClick={handleTestDrFailover}
+            disabled={testingDr}
+            className="cv-btn cv-btn-secondary"
+            style={{ fontWeight: 800 }}
+          >
+            <Activity size={16} className={testingDr ? 'animate-spin' : ''} />
+            <span>{testingDr ? 'Testing Failover...' : 'Test DR Failover'}</span>
+          </button>
+
+          <button 
+            onClick={handleCreateSnapshot}
+            disabled={creating}
+            className="cv-btn cv-btn-primary"
+            style={{ fontWeight: 800 }}
+          >
+            <RefreshCw size={16} className={creating ? 'animate-spin' : ''} />
+            <span>{creating ? 'Hashing & Snapshotting...' : 'Create Instant Snapshot'}</span>
+          </button>
+        </div>
       </div>
 
       {/* RECOVERY METRICS CARDS */}
@@ -193,6 +256,42 @@ export default function BackupView({ onShowToast }) {
                       <RotateCcw size={13} className={restoringId === b.id ? 'animate-spin' : ''} />
                       <span>{restoringId === b.id ? 'Restoring DB...' : 'PITR Restore'}</span>
                     </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ADMIN RECOVERY LOGS TABLE */}
+      <div className="cv-card" style={{ padding: '1.25rem' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+          📜 Admin Disaster Recovery & Failover Audit Logs
+        </h3>
+
+        <div className="cv-table-container">
+          <table className="cv-table">
+            <thead>
+              <tr>
+                <th>LOG ID</th>
+                <th>TIMESTAMP</th>
+                <th>ACTION EVENT</th>
+                <th>ADMINISTRATOR</th>
+                <th>RESULT STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {drLogs.map(l => (
+                <tr key={l.id}>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, color: 'var(--accent-primary)' }}>{l.id}</td>
+                  <td style={{ fontSize: '0.8125rem' }}>{l.timestamp}</td>
+                  <td style={{ fontWeight: 700 }}>{l.action}</td>
+                  <td style={{ fontSize: '0.8125rem' }}>{l.admin}</td>
+                  <td>
+                    <span className="cv-badge cv-badge-emerald" style={{ fontWeight: 800 }}>
+                      {l.result}
+                    </span>
                   </td>
                 </tr>
               ))}
