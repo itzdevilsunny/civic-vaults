@@ -28,6 +28,7 @@ import PublicVerificationView from './components/Security/PublicVerificationView
 import ChainOfCustodyView from './components/ChainOfCustody/ChainOfCustodyView';
 import ApprovalInboxView from './components/Approvals/ApprovalInboxView';
 import LegalHoldView from './components/LegalHold/LegalHoldView';
+import IntelligenceGraphView from './components/Intelligence/IntelligenceGraphView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -47,6 +48,7 @@ import {
 const VIEW_ORDER = [
   'dashboard', 
   'cases', 
+  'intelligence-graph',
   'documents', 
   'chain-of-custody', 
   'approvals-inbox', 
@@ -380,6 +382,14 @@ export default function App() {
             onOpenCreateCase={() => setIsCreateCaseOpen(true)}
             onShowToast={showToast}
             onSeedDatabase={handleSeedDatabase}
+          />
+        );
+      case 'intelligence-graph':
+        return (
+          <IntelligenceGraphView 
+            cases={cases}
+            documents={documents}
+            onShowToast={showToast}
           />
         );
       case 'chain-of-custody':
