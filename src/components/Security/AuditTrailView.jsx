@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { History, Search, Download, Filter, Shield, Calendar, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
-import { MOCK_ACTIVITIES } from '../../data/mockData';
 
-export default function AuditTrailView({ onShowToast }) {
+export default function AuditTrailView({ onShowToast, liveLogs = [] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
 
-  const auditEvents = [
+  const defaultAuditEvents = [
     { id: "LOG-1001", timestamp: "2026-08-22 18:42:10 IST", user: "Inspector Arjun Singh", action: "Document SHA-256 Verified", target: "FIR_2026_0789.pdf", caseId: "2026-0789", ip: "10.42.108.15", device: "Workstation #01", result: "Success (100% Match)" },
     { id: "LOG-1002", timestamp: "2026-08-22 17:30:45 IST", user: "Officer Priya Sharma", action: "Document Shared (Link Created)", target: "Witness_Statement_A.pdf", caseId: "2026-0788", ip: "10.42.100.8", device: "Mobile Field Unit", result: "Created Link (Exp: 24h)" },
     { id: "LOG-1003", timestamp: "2026-08-22 16:15:20 IST", user: "Forensic Analyst R. Mehta", action: "Evidence Image Ingested", target: "Server_Rack_Photo.jpg", caseId: "2026-0789", ip: "10.42.112.4", device: "Lab Terminal #03", result: "Created v1.0" },
@@ -14,12 +13,14 @@ export default function AuditTrailView({ onShowToast }) {
     { id: "LOG-1005", timestamp: "2026-08-22 11:20:00 IST", user: "Senior Officer S. Roy", action: "Digital Signature Applied", target: "FIR_2026_0789.pdf", caseId: "2026-0789", ip: "10.42.100.2", device: "Command Center", result: "SIG-99812-EC Verified" }
   ];
 
-  const filteredLogs = auditEvents.filter(l => {
-    const matchesSearch = l.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          l.target.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          l.caseId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          l.ip.includes(searchTerm);
-    const matchesAction = actionFilter === 'all' || l.action.toLowerCase().includes(actionFilter.toLowerCase());
+  const displayLogs = liveLogs.length > 0 ? liveLogs : defaultAuditEvents;
+
+  const filteredLogs = displayLogs.filter(l => {
+    const matchesSearch = (l.user || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (l.target || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (l.caseId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (l.ip || '').includes(searchTerm);
+    const matchesAction = actionFilter === 'all' || (l.action || '').toLowerCase().includes(actionFilter.toLowerCase());
     return matchesSearch && matchesAction;
   });
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Briefcase, X, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Briefcase, X, ShieldAlert, CheckCircle2, PlusCircle } from 'lucide-react';
 
 export default function CreateCaseModal({ isOpen, onClose, onCreateCase }) {
   const [title, setTitle] = useState('');
@@ -7,13 +7,17 @@ export default function CreateCaseModal({ isOpen, onClose, onCreateCase }) {
   const [assignedTo, setAssignedTo] = useState('Arjun Singh');
   const [legalHold, setLegalHold] = useState(true);
   const [summary, setSummary] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!title || isSubmitting) return;
+
+    setIsSubmitting(true);
     const newCaseId = `2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    onCreateCase({
+    const newCase = {
       id: newCaseId,
       title,
       priority,
@@ -26,7 +30,12 @@ export default function CreateCaseModal({ isOpen, onClose, onCreateCase }) {
       evidenceCount: 0,
       legalHold,
       summary
-    });
+    };
+
+    await onCreateCase(newCase);
+    setIsSubmitting(false);
+    setTitle('');
+    setSummary('');
     onClose();
   };
 
@@ -45,7 +54,7 @@ export default function CreateCaseModal({ isOpen, onClose, onCreateCase }) {
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="cv-btn-icon"><X size={18} /></button>
+          <button type="button" onClick={onClose} className="cv-btn-icon"><X size={18} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="cv-modal-body">
@@ -84,7 +93,7 @@ export default function CreateCaseModal({ isOpen, onClose, onCreateCase }) {
           </div>
 
           <div className="cv-input-group">
-            <label className="cv-label">Executive Case Summary & Initial Intake Notes</label>
+            <label className="cv-label">Executive Case Summary & Initial Intake Notes *</label>
             <textarea 
               className="cv-textarea"
               rows={4}
@@ -97,9 +106,9 @@ export default function CreateCaseModal({ isOpen, onClose, onCreateCase }) {
 
           <div className="cv-modal-footer" style={{ paddingRight: 0, paddingLeft: 0, borderBottom: 'none' }}>
             <button type="button" onClick={onClose} className="cv-btn cv-btn-secondary">Cancel</button>
-            <button type="submit" className="cv-btn cv-btn-primary">
+            <button type="submit" className="cv-btn cv-btn-primary" disabled={isSubmitting}>
               <PlusCircle size={16} />
-              <span>Initialize Case Vault</span>
+              <span>{isSubmitting ? "Initializing Case..." : "Initialize Case Vault"}</span>
             </button>
           </div>
         </form>
