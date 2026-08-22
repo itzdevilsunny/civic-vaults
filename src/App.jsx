@@ -11,6 +11,7 @@ import ShareDocumentModal from './components/Modals/ShareDocumentModal';
 import IncidentResponseModal from './components/Modals/IncidentResponseModal';
 import MfaAuthModal from './components/Modals/MfaAuthModal';
 import PanchnamaModal from './components/Modals/PanchnamaModal';
+import NotificationsModal from './components/Modals/NotificationsModal';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -69,6 +70,7 @@ export default function App() {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [isPanchnamaOpen, setIsPanchnamaOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -415,8 +417,8 @@ export default function App() {
           isOffline={isOffline}
           onToggleOffline={handleToggleOffline}
           user={user}
-          unreadNotifications={activities.length}
-          onOpenNotifications={() => showToast(`${activities.length} Recent vault activities logged`, "info")}
+          unreadNotifications={activities.length + 1}
+          onOpenNotifications={() => setIsNotificationsOpen(true)}
           lang={lang}
           onToggleLang={handleToggleLang}
         />
@@ -552,6 +554,12 @@ export default function App() {
         onClose={() => setIsPanchnamaOpen(false)}
         onShowToast={showToast}
         cases={cases}
+      />
+
+      <NotificationsModal
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+        onShowToast={showToast}
       />
 
       {/* Global Toast Component */}
