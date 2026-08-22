@@ -13,8 +13,9 @@ import {
   Lock,
   UserCheck,
   Globe,
-  Award,
-  Sparkles
+  Sparkles,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -30,8 +31,9 @@ export default function Navbar({
   onOpenNotifications,
   lang = 'en',
   onToggleLang,
-  onOpenJudgeTour,
-  onOpenAiAssistant
+  onOpenAiAssistant,
+  onNavigateBack,
+  onNavigateNext
 }) {
   return (
     <header className="cv-navbar" style={{
@@ -47,8 +49,8 @@ export default function Navbar({
       zIndex: 40,
       boxShadow: 'var(--shadow-sm)'
     }}>
-      {/* Left Navigation: Toggle & Search */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+      {/* Left Navigation: Toggle, Back/Next Nav & Search */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', flex: 1 }}>
         <button 
           onClick={onToggleSidebar}
           className="cv-btn-icon"
@@ -57,6 +59,26 @@ export default function Navbar({
         >
           <Menu size={20} />
         </button>
+
+        {/* Back / Next View Navigation Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: '0.2rem', border: '1px solid var(--border-color)' }}>
+          <button
+            onClick={onNavigateBack}
+            className="cv-btn-icon"
+            style={{ width: '30px', height: '30px', cursor: 'pointer' }}
+            title="Navigate to Previous View (Back)"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={onNavigateNext}
+            className="cv-btn-icon"
+            style={{ width: '30px', height: '30px', cursor: 'pointer' }}
+            title="Navigate to Next View (Forward)"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
 
         {/* Global Search Bar */}
         <div 
@@ -118,29 +140,6 @@ export default function Navbar({
         >
           <Sparkles size={14} />
           <span>🤖 Gemini AI</span>
-        </button>
-
-        {/* 🏆 SIH Judge 45-Second Tour Walkthrough Button */}
-        <button
-          onClick={onOpenJudgeTour}
-          style={{
-            cursor: 'pointer',
-            padding: '0.4rem 0.65rem',
-            fontWeight: 900,
-            fontSize: '0.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            color: '#ffffff',
-            borderRadius: 'var(--radius-md)',
-            border: 'none',
-            boxShadow: 'var(--shadow-glow)'
-          }}
-          title="Open SIH Hackathon 45-Second Interactive Judge Tour"
-        >
-          <Award size={15} />
-          <span>🏆 SIH Judge Demo</span>
         </button>
 
         {/* 🇮🇳 MHA Bilingual Language Switcher Button (EN ↔ हिंदी) */}

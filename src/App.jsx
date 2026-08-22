@@ -44,6 +44,20 @@ import {
   seedSupabaseDatabase 
 } from './lib/supabaseClient';
 
+const VIEW_ORDER = [
+  'dashboard', 
+  'cases', 
+  'documents', 
+  'chain-of-custody', 
+  'approvals-inbox', 
+  'legal-hold', 
+  'verify-portal', 
+  'reports', 
+  'security-logs', 
+  'audit-trail', 
+  'access-control'
+];
+
 export default function App() {
   // Theme state: DEFAULT THEME IS LIGHT THEME
   const [theme, setTheme] = useState('light');
@@ -181,6 +195,25 @@ export default function App() {
       });
       showToast(`⚡ Connection Restored! Synchronized ${syncedCount || 1} pending offline field submissions to Supabase Vault ✓`, "success");
     }
+  };
+
+  const handleNavigateBack = () => {
+    if (selectedCase) {
+      setSelectedCase(null);
+      return;
+    }
+    const currentIndex = VIEW_ORDER.indexOf(activeView);
+    const prevIndex = (currentIndex - 1 + VIEW_ORDER.length) % VIEW_ORDER.length;
+    setActiveView(VIEW_ORDER[prevIndex]);
+  };
+
+  const handleNavigateNext = () => {
+    if (selectedCase) {
+      setSelectedCase(null);
+    }
+    const currentIndex = VIEW_ORDER.indexOf(activeView);
+    const nextIndex = (currentIndex + 1) % VIEW_ORDER.length;
+    setActiveView(VIEW_ORDER[nextIndex]);
   };
 
   // CREATE NEW CASE LIVE HANDLER
@@ -458,8 +491,9 @@ export default function App() {
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           lang={lang}
           onToggleLang={handleToggleLang}
-          onOpenJudgeTour={() => setIsJudgeTourOpen(true)}
           onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
+          onNavigateBack={handleNavigateBack}
+          onNavigateNext={handleNavigateNext}
         />
 
         {/* Live Database Sync Indicator Banner */}
