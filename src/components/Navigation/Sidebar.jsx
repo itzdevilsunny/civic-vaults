@@ -19,7 +19,8 @@ import {
   HardDrive, 
   HelpCircle,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -61,6 +62,7 @@ export default function Sidebar({
     {
       title: "SECURITY & CONTROL",
       items: [
+        { id: 'verify-portal', label: 'Public 65B Verifier', icon: ShieldCheck, badge: 'Sec 65B' },
         { id: 'access-control', label: 'Access Control', icon: Lock },
         { id: 'audit-trail', label: 'Audit Trail', icon: History },
         { id: 'security-logs', label: 'Security Logs', icon: ShieldAlert, badge: securityLogsCount.toString(), alert: securityLogsCount > 0 }

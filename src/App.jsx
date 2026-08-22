@@ -19,6 +19,7 @@ import AccessControlView from './components/Security/AccessControlView';
 import AuditTrailView from './components/Security/AuditTrailView';
 import SecurityLogsView from './components/Security/SecurityLogsView';
 import ReportsView from './components/Reports/ReportsView';
+import PublicVerificationView from './components/Security/PublicVerificationView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 
@@ -328,6 +329,8 @@ export default function App() {
             onSeedDatabase={handleSeedDatabase}
           />
         );
+      case 'verify-portal':
+        return <PublicVerificationView onShowToast={showToast} />;
       case 'access-control':
         return <AccessControlView onShowToast={showToast} />;
       case 'audit-trail':
