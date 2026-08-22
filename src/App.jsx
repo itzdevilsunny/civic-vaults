@@ -13,6 +13,7 @@ import MfaAuthModal from './components/Modals/MfaAuthModal';
 import PanchnamaModal from './components/Modals/PanchnamaModal';
 import NotificationsModal from './components/Modals/NotificationsModal';
 import ExportModal from './components/Modals/ExportModal';
+import SihJudgeTourModal from './components/Common/SihJudgeTourModal';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -76,6 +77,7 @@ export default function App() {
   const [isPanchnamaOpen, setIsPanchnamaOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isJudgeTourOpen, setIsJudgeTourOpen] = useState(false);
   const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -454,6 +456,7 @@ export default function App() {
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           lang={lang}
           onToggleLang={handleToggleLang}
+          onOpenJudgeTour={() => setIsJudgeTourOpen(true)}
         />
 
         {/* Live Database Sync Indicator Banner */}
@@ -599,6 +602,13 @@ export default function App() {
       <NotificationsModal
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
+        onShowToast={showToast}
+      />
+
+      <SihJudgeTourModal
+        isOpen={isJudgeTourOpen}
+        onClose={() => setIsJudgeTourOpen(false)}
+        onChangeView={(v) => { setSelectedCase(null); setActiveView(v); }}
         onShowToast={showToast}
       />
 

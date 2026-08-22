@@ -12,7 +12,8 @@ import {
   ChevronDown,
   Lock,
   UserCheck,
-  Globe
+  Globe,
+  Award
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -27,7 +28,8 @@ export default function Navbar({
   unreadNotifications,
   onOpenNotifications,
   lang = 'en',
-  onToggleLang
+  onToggleLang,
+  onOpenJudgeTour
 }) {
   return (
     <header className="cv-navbar" style={{
@@ -65,7 +67,7 @@ export default function Navbar({
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-md)',
             padding: '0.5rem 0.875rem',
-            maxWidth: '420px',
+            maxWidth: '380px',
             width: '100%',
             cursor: 'pointer',
             transition: 'all var(--transition-fast)'
@@ -92,15 +94,38 @@ export default function Navbar({
       </div>
 
       {/* Right Navigation: Language, Status, Theme, Alerts & User Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
         
+        {/* 🏆 SIH Judge 45-Second Tour Walkthrough Button */}
+        <button
+          onClick={onOpenJudgeTour}
+          style={{
+            cursor: 'pointer',
+            padding: '0.4rem 0.75rem',
+            fontWeight: 900,
+            fontSize: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            color: '#ffffff',
+            borderRadius: 'var(--radius-md)',
+            border: 'none',
+            boxShadow: 'var(--shadow-glow)'
+          }}
+          title="Open SIH Hackathon 45-Second Interactive Judge Tour"
+        >
+          <Award size={15} />
+          <span>🏆 SIH Judge Demo</span>
+        </button>
+
         {/* 🇮🇳 MHA Bilingual Language Switcher Button (EN ↔ हिंदी) */}
         <button
           onClick={onToggleLang}
           className="cv-badge cv-badge-indigo"
           style={{ 
             cursor: 'pointer', 
-            padding: '0.4rem 0.75rem',
+            padding: '0.4rem 0.65rem',
             fontWeight: 800,
             fontSize: '0.75rem',
             display: 'flex',
@@ -120,7 +145,7 @@ export default function Navbar({
         <button
           onClick={onToggleOffline}
           className={`cv-badge ${isOffline ? 'cv-badge-amber' : 'cv-badge-emerald'}`}
-          style={{ cursor: 'pointer', border: '1px solid currentColor', padding: '0.35rem 0.75rem' }}
+          style={{ cursor: 'pointer', border: '1px solid currentColor', padding: '0.35rem 0.65rem' }}
           title={isOffline ? "Currently in Offline Field Mode - Actions queued locally" : "Online & Synchronized with Vault Server"}
         >
           {isOffline ? <WifiOff size={14} /> : <Wifi size={14} />}
@@ -129,17 +154,7 @@ export default function Navbar({
           </span>
         </button>
 
-        {/* Security Level Indicator */}
-        <div 
-          className="cv-badge cv-badge-indigo"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.35rem 0.75rem' }}
-          title="Encrypted connection - TLS 1.3 + AES-256"
-        >
-          <Lock size={13} />
-          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>TLS 1.3 Secured</span>
-        </div>
-
-        <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 0.25rem' }} />
+        <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 0.2rem' }} />
 
         {/* Light/Dark Theme Toggle */}
         <button
@@ -192,7 +207,7 @@ export default function Navbar({
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
-          paddingLeft: '0.5rem',
+          paddingLeft: '0.25rem',
           cursor: 'pointer'
         }}>
           <div style={{ position: 'relative' }}>
