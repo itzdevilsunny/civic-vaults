@@ -22,7 +22,9 @@ import {
   ChevronRight,
   ShieldCheck,
   Stamp,
-  Network
+  Network,
+  Database,
+  Activity
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -69,6 +71,8 @@ export default function Sidebar({
       items: [
         { id: 'verify-portal', label: 'Public 65B Verifier', icon: ShieldCheck, badge: 'Sec 65B' },
         { id: 'legal-hold', label: 'Legal Hold & Retention', icon: FolderLock, badge: 'Hold ⚖️' },
+        { id: 'backup-vault', label: 'Backup Vault & PITR', icon: Database, badge: 'Snapshots 💾' },
+        { id: 'system-health', label: 'System Telemetry Health', icon: Activity, badge: '14ms ⚡' },
         { id: 'access-control', label: 'Access Control', icon: Lock },
         { id: 'audit-trail', label: 'Audit Trail', icon: History },
         { id: 'security-logs', label: 'Security Logs', icon: ShieldAlert, badge: securityLogsCount.toString(), alert: securityLogsCount > 0 }

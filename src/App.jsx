@@ -29,6 +29,8 @@ import ChainOfCustodyView from './components/ChainOfCustody/ChainOfCustodyView';
 import ApprovalInboxView from './components/Approvals/ApprovalInboxView';
 import LegalHoldView from './components/LegalHold/LegalHoldView';
 import IntelligenceGraphView from './components/Intelligence/IntelligenceGraphView';
+import BackupView from './components/Backup/BackupView';
+import SystemHealthView from './components/Health/SystemHealthView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -53,6 +55,8 @@ const VIEW_ORDER = [
   'chain-of-custody', 
   'approvals-inbox', 
   'legal-hold', 
+  'backup-vault',
+  'system-health',
   'verify-portal', 
   'reports', 
   'security-logs', 
@@ -389,6 +393,18 @@ export default function App() {
           <IntelligenceGraphView 
             cases={cases}
             documents={documents}
+            onShowToast={showToast}
+          />
+        );
+      case 'backup-vault':
+        return (
+          <BackupView 
+            onShowToast={showToast}
+          />
+        );
+      case 'system-health':
+        return (
+          <SystemHealthView 
             onShowToast={showToast}
           />
         );
