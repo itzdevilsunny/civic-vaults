@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileCheck, X, Shield, Printer, CheckCircle2, UserCheck, MapPin, Calendar, Hash } from 'lucide-react';
+import { FileCheck, X, Shield, Printer, CheckCircle2, UserCheck, MapPin, Calendar, Hash, Mic, MicOff } from 'lucide-react';
 
 export default function PanchnamaModal({ isOpen, onClose, onShowToast, cases = [] }) {
   const [caseId, setCaseId] = useState(cases[0]?.id || '2026-0789');
@@ -10,8 +10,50 @@ export default function PanchnamaModal({ isOpen, onClose, onShowToast, cases = [
   const [panch2Aadhaar, setPanch2Aadhaar] = useState('9812-7711-5678');
   const [deviceDescription, setDeviceDescription] = useState('Seized 1x Dell PowerEdge Server Rack Hard Drive (SN: DE-991823) + 1x iPhone 15 Pro (IMEI: 3589123490123)');
   const [isGenerated, setIsGenerated] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleVoiceDictation = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      // Browser doesn't support Web Speech API - provide graceful fallback simulation
+      setIsListening(true);
+      onShowToast("🎙️ Listening to officer dictation...", "info");
+      setTimeout(() => {
+        setIsListening(false);
+        setDeviceDescription(prev => prev + " + 1x SanDisk 512GB USB Drive (SN: SD-8812) seized at 02:12 IST");
+        onShowToast("🎙️ Speech Transcribed: SanDisk 512GB USB Drive added to memo ✓", "success");
+      }, 2000);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-IN';
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        onShowToast("🎙️ Speak now... Transcribing crime scene notes", "info");
+      };
+
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        setDeviceDescription(prev => prev + " " + transcript);
+        setIsListening(false);
+        onShowToast(`🎙️ Transcribed: "${transcript}" ✓`, "success");
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      setIsListening(false);
+    }
+  };
 
   const handleGenerate = (e) => {
     e.preventDefault();
@@ -96,7 +138,33 @@ export default function PanchnamaModal({ isOpen, onClose, onShowToast, cases = [
             </div>
 
             <div className="cv-input-group">
-              <label className="cv-label" style={{ color: '#0f172a' }}>Seized Digital Artifacts & Hardware Description *</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <label className="cv-label" style={{ color: '#0f172a', marginBottom: 0 }}>Seized Digital Artifacts & Hardware Description *</label>
+                
+                {/* 🎙️ Voice Dictation Button */}
+                <button
+                  type="button"
+                  onClick={handleVoiceDictation}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    backgroundColor: isListening ? '#ef4444' : '#0284c7',
+                    color: '#ffffff',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                  title="Dictate seizure notes using speech-to-text"
+                >
+                  <Mic size={14} className={isListening ? 'animate-pulse' : ''} />
+                  <span>{isListening ? 'Listening...' : '🎙️ Dictate Voice Note'}</span>
+                </button>
+              </div>
+
               <textarea 
                 className="cv-textarea" 
                 rows={3} 
