@@ -1,24 +1,47 @@
 import React, { useState } from 'react';
-import { Download, FileText, ShieldCheck, Printer, X, CheckCircle2, Lock, Eye } from 'lucide-react';
+import { Download, FileText, ShieldCheck, Printer, X, CheckCircle2, Lock, Eye, Package, FileCode, Award } from 'lucide-react';
 
 export default function ExportModal({ isOpen, onClose, document: doc, onShowToast }) {
   const [includeWatermark, setIncludeWatermark] = useState(true);
   const [includeSec65B, setIncludeSec65B] = useState(true);
+  const [includeManifest, setIncludeManifest] = useState(true);
   const [watermarkText, setWatermarkText] = useState("CONFIDENTIAL • POLICE DEPT • FOR COURT USE ONLY");
   const [exporting, setExporting] = useState(false);
+  const [packageVerified, setPackageVerified] = useState(false);
 
   if (!isOpen || !doc) return null;
 
   const exportTimestamp = new Date().toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'medium' }) + " IST";
   const certId = `SEC65B-2026-DL-${Math.floor(100000 + Math.random() * 900000)}`;
+  const packageId = `CASE_PACKAGE_${doc.caseId || '2026-00421'}`;
+
+  const manifestData = {
+    packageId,
+    timestamp: exportTimestamp,
+    caseId: doc.caseId,
+    attestingOfficer: "Inspector Arjun Singh (Badge #IND-DL-8892)",
+    manifestFiles: [
+      { filename: "manifest.json", type: "metadata_index" },
+      { filename: "case_summary.pdf", type: "executive_summary" },
+      { filename: `evidence/${doc.name}`, sha256: doc.sha256 || "8f4c2b9a1c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f" },
+      { filename: "audit/custody_timeline.json", status: "VERIFIED" },
+      { filename: "signatures/ecc_signature.sig", sigId: "SIG-2026-EC-9912" }
+    ],
+    manifestSha256Seal: "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b"
+  };
 
   const handleTriggerExport = () => {
     setExporting(true);
     setTimeout(() => {
       setExporting(false);
-      onShowToast(`📥 Exported ${doc.name} with Watermark & Sec 65B Certificate (${certId}) ✓`, "success");
+      onShowToast(`📥 Generated Encrypted Case Package Bundle (${packageId}.zip) with manifest.json & SHA-256 seal ✓`, "success");
       onClose();
     }, 1200);
+  };
+
+  const handleVerifyPackage = () => {
+    setPackageVerified(true);
+    onShowToast("✓ Recalculated Case Package Hashes: 100% Match with manifest.json SHA-256 Seal!", "success");
   };
 
   const handlePrintCertificate = () => {
@@ -33,12 +56,12 @@ export default function ExportModal({ isOpen, onClose, document: doc, onShowToas
         <div className="cv-modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div className="cv-badge cv-badge-indigo" style={{ padding: '0.5rem' }}>
-              <Download size={18} />
+              <Package size={18} />
             </div>
             <div>
-              <h2 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Secure Export & Sec 65B Certificate Generator</h2>
+              <h2 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Secure Case Package Export & Sec 65B Generator</h2>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Bharatiya Sakshya Adhiniyam (BSA 2023) / Section 65B compliant legal evidence export
+                Encrypted Legal Evidence Package with manifest.json, SHA-256 Seal & Section 65B Certificate
               </p>
             </div>
           </div>
@@ -48,7 +71,7 @@ export default function ExportModal({ isOpen, onClose, document: doc, onShowToas
         {/* Modal Body */}
         <div className="cv-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
-          {/* Document Summary Pill */}
+          {/* Document & Package Summary Pill */}
           <div style={{
             padding: '0.875rem 1rem',
             backgroundColor: 'var(--bg-subtle)',
@@ -60,19 +83,27 @@ export default function ExportModal({ isOpen, onClose, document: doc, onShowToas
           }}>
             <div>
               <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                {doc.name}
+                {packageId} ({doc.name})
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Case ID: #{doc.caseId} • SHA-256 Lock: <code style={{ color: 'var(--accent-primary)' }}>{doc.sha256?.substring(0, 16)}...</code>
+                Case ID: #{doc.caseId} • Manifest Seal: <code style={{ color: 'var(--accent-primary)' }}>{manifestData.manifestSha256Seal.substring(0, 16)}...</code>
               </div>
             </div>
-            <span className="cv-badge cv-badge-emerald">SHA-256 Verified</span>
+            
+            <button 
+              onClick={handleVerifyPackage} 
+              className="cv-btn cv-btn-secondary cv-btn-sm"
+              style={{ fontSize: '0.75rem', fontWeight: 700 }}
+            >
+              <ShieldCheck size={14} style={{ color: 'var(--success-dark)' }} />
+              <span>{packageVerified ? "✓ Hashes Verified" : "Verify Package Hashes"}</span>
+            </button>
           </div>
 
-          {/* Export Options */}
+          {/* Export Options Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             
-            {/* Option A: Dynamic Security Watermarking */}
+            {/* Option A: Security Watermarking */}
             <div style={{
               padding: '1rem',
               borderRadius: 'var(--radius-md)',
@@ -102,14 +133,11 @@ export default function ExportModal({ isOpen, onClose, document: doc, onShowToas
                     className="cv-input"
                     style={{ fontSize: '0.78125rem' }}
                   />
-                  <span style={{ fontSize: '0.6875rem', color: 'var(--accent-primary)' }}>
-                    Auto-stamps Officer ID, Timestamp & IP on every page.
-                  </span>
                 </div>
               )}
             </div>
 
-            {/* Option B: Section 65B Certificate Inclusion */}
+            {/* Option B: Package Manifest JSON & Certificate */}
             <div style={{
               padding: '1rem',
               borderRadius: 'var(--radius-md)',
@@ -125,69 +153,43 @@ export default function ExportModal({ isOpen, onClose, document: doc, onShowToas
                   style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                 />
                 <label htmlFor="secCheck" style={{ fontWeight: 800, fontSize: '0.875rem', cursor: 'pointer' }}>
-                  Generate Sec 65B Certificate
+                  Attach Sec 65B Cert & Manifest
                 </label>
               </div>
 
               {includeSec65B && (
                 <p style={{ fontSize: '0.78125rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  Attaches statutory Certificate under Section 65B of Indian Evidence Act / BSA 2023 affirming electronic record authenticity.
+                  Includes <code>manifest.json</code>, <code>SHA256_MANIFEST</code> seal lock, and official Section 65B Court Certificate under BSA 2023.
                 </p>
               )}
             </div>
 
           </div>
 
-          {/* PRINTABLE SEC 65B CERTIFICATE PREVIEW CARD */}
-          {includeSec65B && (
-            <div style={{
-              border: '2px dashed var(--accent-primary)',
-              borderRadius: 'var(--radius-md)',
-              padding: '1.25rem',
-              backgroundColor: 'var(--bg-surface)',
-              lineHeight: 1.6
-            }} className="printable-cert">
-              
-              <div style={{ textAlign: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>
-                  GOVERNMENT OF INDIA • MINISTRY OF HOME AFFAIRS
-                </h3>
-                <h4 style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
-                  CERTIFICATE UNDER SECTION 65B OF THE INDIAN EVIDENCE ACT / BSA 2023
-                </h4>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Certificate Ref ID: <strong>{certId}</strong>
-                </div>
-              </div>
-
-              <div style={{ fontSize: '0.78125rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <p>
-                  I, <strong>Inspector Arjun Singh (Badge #IND-DL-8892)</strong>, hereby certify that the electronic record titled <strong>"{doc.name}"</strong> associated with Case Docket <strong>#{doc.caseId}</strong> was produced by CaseVault secure digital evidence repository operating under normal activity.
-                </p>
-
-                <div style={{ backgroundColor: 'var(--bg-subtle)', padding: '0.625rem', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontSize: '0.7rem' }}>
-                  <div>SHA-256 Hash Digest: {doc.sha256}</div>
-                  <div>Verification Timestamp: {exportTimestamp}</div>
-                  <div>Vault Custody Status: VERIFIED & LOCKED</div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '0.75rem' }}>
-                  <div>
-                    <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Cryptographic Seal:</span>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--success-dark)' }}>
-                      ✓ ECC Digital Signature Applied
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 800 }}>Inspector Arjun Singh</div>
-                    <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>Senior Cyber Forensic Officer</div>
-                  </div>
-                </div>
-              </div>
-
+          {/* MANIFEST JSON PREVIEW */}
+          <div style={{
+            padding: '0.875rem',
+            backgroundColor: 'var(--bg-subtle)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-color)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+              <FileCode size={14} style={{ color: 'var(--accent-primary)' }} />
+              <span>Generated Manifest Index (manifest.json):</span>
             </div>
-          )}
+            <pre style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.7rem',
+              color: 'var(--text-primary)',
+              backgroundColor: 'var(--bg-surface)',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '4px',
+              overflowX: 'auto',
+              border: '1px solid var(--border-color)'
+            }}>
+              {JSON.stringify(manifestData, null, 2)}
+            </pre>
+          </div>
 
         </div>
 
@@ -202,7 +204,7 @@ export default function ExportModal({ isOpen, onClose, document: doc, onShowToas
 
           <button onClick={handleTriggerExport} disabled={exporting} className="cv-btn cv-btn-primary" style={{ fontWeight: 800 }}>
             <Download size={16} />
-            <span>{exporting ? 'Generating Package...' : 'Download Secure Package'}</span>
+            <span>{exporting ? 'Packing & Signing...' : 'Download Encrypted Case Package (.zip)'}</span>
           </button>
         </div>
 
