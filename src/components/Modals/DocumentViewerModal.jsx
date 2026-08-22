@@ -23,7 +23,8 @@ import {
   Target,
   FileCode,
   AlertOctagon,
-  UserCheck
+  UserCheck,
+  Key
 } from 'lucide-react';
 
 import { analyzeForensicDocument } from '../../lib/aiForensicEngine';
@@ -50,6 +51,54 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
   }, [activeTab, document, aiData]);
 
   if (!isOpen || !document) return null;
+
+  // Sample Access History Events requested by user
+  const accessHistory = [
+    {
+      id: 1,
+      user: "Inspector Arjun Singh",
+      role: "Senior Lead Inspector",
+      action: "Viewed Evidence Document",
+      timestamp: "22 Aug, 10:42 IST",
+      ip: "10.42.108.15",
+      device: "Workstation #01",
+      status: "✓ Viewed",
+      success: true
+    },
+    {
+      id: 2,
+      user: "Forensic Officer Dr. Raman",
+      role: "Central Forensic Lab",
+      action: "Downloaded Original File",
+      timestamp: "22 Aug, 11:15 IST",
+      ip: "10.42.112.4",
+      device: "Forensic Terminal #09",
+      status: "✓ Downloaded",
+      success: true
+    },
+    {
+      id: 3,
+      user: "Inspector Arjun Singh",
+      role: "Senior Lead Inspector",
+      action: "Shared Encrypted Link (48h Expiry)",
+      timestamp: "22 Aug, 11:30 IST",
+      ip: "10.42.108.15",
+      device: "Workstation #01",
+      status: "✓ Shared",
+      success: true
+    },
+    {
+      id: 4,
+      user: "Unknown Foreign IP (185.220.101.5)",
+      role: "Unauthenticated Request",
+      action: "Attempted Unauthorized Access",
+      timestamp: "22 Aug, 12:04 IST",
+      ip: "185.220.101.5",
+      device: "Tor Network Node",
+      status: "⚠ Blocked",
+      success: false
+    }
+  ];
 
   const handleReVerifyHash = () => {
     setIsVerifyingHash(true);
@@ -132,6 +181,7 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
         }}>
           {[
             { id: 'metadata', label: 'Document Metadata', icon: FileText },
+            { id: 'accessHistory', label: 'Access History (🔥 Logs)', icon: UserCheck, badge: accessHistory.length },
             { id: 'aiInsights', label: 'AI Forensic Intelligence (USP 💎)', icon: Sparkles, badge: 'AI' },
             { id: 'chainOfCustody', label: 'Chain of Custody (USP 🥇)', icon: ShieldCheck, badge: document.chainOfCustody?.length },
             { id: 'versions', label: 'Version Control', icon: History },
@@ -312,6 +362,68 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
 
               </div>
 
+            </div>
+          )}
+
+          {/* TAB: ACCESS HISTORY LOGS (🔥 SPECIFICATION REQUIREMENT) */}
+          {activeTab === 'accessHistory' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800 }}>
+                    🔥 Document Access History & RBAC Audit Trail
+                  </h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    Real-time monitoring of all view, download, share, and unauthorized attempt events
+                  </p>
+                </div>
+                <span className="cv-badge cv-badge-emerald">
+                  Audit Logging Enabled ✓
+                </span>
+              </div>
+
+              <div className="cv-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table className="cv-table">
+                  <thead>
+                    <tr>
+                      <th>User & Role</th>
+                      <th>Action</th>
+                      <th>Timestamp</th>
+                      <th>IP & Device</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessHistory.map(log => (
+                      <tr key={log.id} style={{ backgroundColor: !log.success ? 'var(--danger-light)' : 'transparent' }}>
+                        <td>
+                          <div style={{ fontWeight: 800, color: log.success ? 'var(--text-primary)' : 'var(--danger)' }}>
+                            {log.user}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                            {log.role}
+                          </div>
+                        </td>
+                        <td style={{ fontWeight: 700 }}>
+                          {log.action}
+                        </td>
+                        <td style={{ fontSize: '0.78125rem', color: 'var(--text-secondary)' }}>
+                          {log.timestamp}
+                        </td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
+                          <div>{log.ip}</div>
+                          <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>{log.device}</div>
+                        </td>
+                        <td>
+                          <span className={`cv-badge ${log.success ? 'cv-badge-emerald' : 'cv-badge-red'}`} style={{ fontWeight: 800 }}>
+                            {log.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
