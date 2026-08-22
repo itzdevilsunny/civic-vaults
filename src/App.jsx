@@ -9,6 +9,7 @@ import DocumentViewerModal from './components/Modals/DocumentViewerModal';
 import CreateCaseModal from './components/Modals/CreateCaseModal';
 import ShareDocumentModal from './components/Modals/ShareDocumentModal';
 import IncidentResponseModal from './components/Modals/IncidentResponseModal';
+import MfaAuthModal from './components/Modals/MfaAuthModal';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -22,6 +23,7 @@ import ReportsView from './components/Reports/ReportsView';
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 
 import { 
+  supabase,
   getLiveCases, 
   createLiveCase, 
   getLiveDocuments, 
@@ -60,6 +62,9 @@ export default function App() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isCreateCaseOpen, setIsCreateCaseOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isMfaOpen, setIsMfaOpen] = useState(false);
+  const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
+  const [pendingAction, setPendingAction] = useState(null);
 
   // Toast notification state
   const [toast, setToast] = useState({ message: '', type: 'success' });
@@ -103,6 +108,24 @@ export default function App() {
     }
 
     loadLiveData();
+  }, []);
+
+  // Supabase Real-Time WebSocket Channel Listener
+  useEffect(() => {
+    try {
+      const channel = supabase
+        .channel('public:cases')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'cases' }, (payload) => {
+          showToast(`⚡ Real-Time Supabase Event: Case #${payload.new?.id || 'Update'} synced!`, 'info');
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } catch (err) {
+      console.warn('Realtime subscription warning:', err);
+    }
   }, []);
 
   const showToast = (message, type = 'success') => {
@@ -476,6 +499,16 @@ export default function App() {
         onClose={() => setSelectedAlert(null)}
         alert={selectedAlert}
         onShowToast={showToast}
+      />
+
+      <MfaAuthModal
+        isOpen={isMfaOpen}
+        onClose={() => setIsMfaOpen(false)}
+        actionTitle={mfaActionTitle}
+        onSuccess={() => {
+          showToast("CERT-In / MHA MFA Security Code Authenticated ✓", "success");
+          if (pendingAction) pendingAction();
+        }}
       />
 
       {/* Global Toast Component */}
