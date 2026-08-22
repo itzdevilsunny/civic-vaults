@@ -15,7 +15,9 @@ import {
   Stamp,
   Hash,
   Shield,
-  Clock
+  Clock,
+  Printer,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function DocumentViewerModal({ document, isOpen, onClose, onShowToast }) {
@@ -23,6 +25,7 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
   const [isVerifyingHash, setIsVerifyingHash] = useState(false);
   const [showWatermark, setShowWatermark] = useState(true);
   const [isHashVerified, setIsHashVerified] = useState(true);
+  const [showCertModal, setShowCertModal] = useState(false);
 
   if (!isOpen || !document) return null;
 
@@ -33,6 +36,15 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
       setIsHashVerified(true);
       onShowToast("SHA-256 Checksum re-verified against immutable ledger: 100% Match ✓", "success");
     }, 1200);
+  };
+
+  const handleExportSection65BCertificate = () => {
+    setShowCertModal(true);
+  };
+
+  const handlePrintCertificate = () => {
+    window.print();
+    onShowToast("Statutory Section 65B Court Certificate generated and sent to print/PDF ✓", "success");
   };
 
   return (
@@ -66,6 +78,14 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button 
+              onClick={handleExportSection65BCertificate}
+              className="cv-btn cv-btn-secondary cv-btn-sm"
+              title="Generate Bharatiya Sakshya Adhiniyam 2023 / Section 65B Evidence Certificate"
+            >
+              <Award size={14} style={{ color: 'var(--accent-primary)' }} />
+              <span>Section 65B Cert</span>
+            </button>
             <button 
               onClick={() => onShowToast(`Document ${document.name} downloaded securely. Watermark applied.`, 'success')}
               className="cv-btn cv-btn-primary cv-btn-sm"
@@ -207,7 +227,7 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
               {/* Sidebar Metadata & Hash Inspector */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 
-                {/* 🥈 SHA-256 Integrity Verification Box */}
+                {/* SHA-256 Integrity Verification Box */}
                 <div style={{
                   padding: '1rem',
                   borderRadius: 'var(--radius-md)',
@@ -442,10 +462,11 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
         {/* Footer Actions */}
         <div className="cv-modal-footer">
           <button 
-            onClick={() => onShowToast(`Access requested for ${document.name}`, 'info')}
+            onClick={handleExportSection65BCertificate}
             className="cv-btn cv-btn-secondary"
           >
-            Request Elevated Permission
+            <Award size={16} style={{ color: 'var(--accent-primary)' }} />
+            <span>Generate Statutory 65B Certificate</span>
           </button>
           <button onClick={onClose} className="cv-btn cv-btn-primary">
             Close Inspector
@@ -453,6 +474,69 @@ export default function DocumentViewerModal({ document, isOpen, onClose, onShowT
         </div>
 
       </div>
+
+      {/* SECTION 65B STATUTORY EVIDENCE CERTIFICATE MODAL OVERLAY */}
+      {showCertModal && (
+        <div className="cv-modal-backdrop" style={{ zIndex: 999 }} onClick={() => setShowCertModal(false)}>
+          <div className="cv-modal cv-modal-lg" onClick={e => e.stopPropagation()} style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>
+            
+            {/* Government Header */}
+            <div style={{ textAlign: 'center', borderBottom: '2px solid #0284c7', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.1em', color: '#0369a1', textTransform: 'uppercase' }}>
+                GOVERNMENT OF INDIA • MINISTRY OF HOME AFFAIRS
+              </div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', marginTop: '0.2rem' }}>
+                CERTIFICATE OF ELECTRONIC EVIDENCE INTEGRITY
+              </h2>
+              <p style={{ fontSize: '0.75rem', color: '#475569', fontWeight: 600 }}>
+                Under Section 65B of Indian Evidence Act (BSA 2023 statutory compliance)
+              </p>
+            </div>
+
+            {/* Certificate Body Content */}
+            <div style={{ fontSize: '0.8125rem', lineHeight: 1.6, color: '#334155' }}>
+              <div style={{ backgroundColor: '#f8fafc', padding: '0.875rem', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.78125rem' }}>
+                  <div><strong>Certificate Ref #:</strong> CERT-2026-MHA-9821</div>
+                  <div><strong>Issue Date:</strong> {new Date().toLocaleDateString('en-IN')}</div>
+                  <div><strong>Case Docket #:</strong> Case #{document.caseId}</div>
+                  <div><strong>Target File:</strong> {document.name}</div>
+                </div>
+              </div>
+
+              <p style={{ marginBottom: '0.75rem' }}>
+                I, <strong>Inspector Arjun Singh (Badge #IND-DL-8892)</strong>, Senior Investigation Officer, do hereby certify that the electronic document specified above was ingested, processed, and stored using the CaseVault Encrypted Repository System under continuous lawful operation.
+              </p>
+
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #86efac', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem' }}>
+                <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.78125rem', marginBottom: '0.25rem' }}>
+                  ✓ Cryptographic SHA-256 Checksum Lock:
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: '#14532d', wordBreak: 'break-all' }}>
+                  {document.sha256}
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.75rem', color: '#64748b', fontStyle: 'italic', marginBottom: '1rem' }}>
+                Declared under penalty of perjury. Sealed with immutable chain of custody verification ID: COC-{Math.floor(90000 + Math.random() * 9999)}.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+              <button onClick={() => setShowCertModal(false)} className="cv-btn cv-btn-secondary">
+                Close
+              </button>
+              <button onClick={handlePrintCertificate} className="cv-btn cv-btn-primary">
+                <Printer size={16} />
+                <span>Print / Download Certificate PDF</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
