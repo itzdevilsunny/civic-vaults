@@ -11,7 +11,8 @@ import {
   Menu,
   ChevronDown,
   Lock,
-  UserCheck
+  UserCheck,
+  Globe
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -24,7 +25,9 @@ export default function Navbar({
   onToggleOffline,
   user,
   unreadNotifications,
-  onOpenNotifications
+  onOpenNotifications,
+  lang = 'en',
+  onToggleLang
 }) {
   return (
     <header className="cv-navbar" style={{
@@ -71,7 +74,7 @@ export default function Navbar({
         >
           <Search size={17} style={{ color: 'var(--text-muted)' }} />
           <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', flex: 1 }}>
-            Search cases, documents, officers...
+            {lang === 'hi' ? 'मामले, साक्ष्य, अधिकारी खोजें...' : 'Search cases, documents, officers...'}
           </span>
           <kbd style={{
             fontSize: '0.7rem',
@@ -88,9 +91,31 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* Right Navigation: Status, Theme, Alerts & User Profile */}
+      {/* Right Navigation: Language, Status, Theme, Alerts & User Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         
+        {/* 🇮🇳 MHA Bilingual Language Switcher Button (EN ↔ हिंदी) */}
+        <button
+          onClick={onToggleLang}
+          className="cv-badge cv-badge-indigo"
+          style={{ 
+            cursor: 'pointer', 
+            padding: '0.4rem 0.75rem',
+            fontWeight: 800,
+            fontSize: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            backgroundColor: 'var(--accent-light)',
+            color: 'var(--accent-primary)',
+            border: '1px solid var(--accent-primary)'
+          }}
+          title="Switch Language (English ↔ हिंदी गृह मंत्रालय मानक)"
+        >
+          <Globe size={14} />
+          <span>{lang === 'en' ? 'EN | हिंदी' : 'हिंदी | EN'}</span>
+        </button>
+
         {/* Offline Mode Sync Simulator Badge */}
         <button
           onClick={onToggleOffline}

@@ -10,6 +10,7 @@ import CreateCaseModal from './components/Modals/CreateCaseModal';
 import ShareDocumentModal from './components/Modals/ShareDocumentModal';
 import IncidentResponseModal from './components/Modals/IncidentResponseModal';
 import MfaAuthModal from './components/Modals/MfaAuthModal';
+import PanchnamaModal from './components/Modals/PanchnamaModal';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -22,6 +23,7 @@ import ReportsView from './components/Reports/ReportsView';
 import PublicVerificationView from './components/Security/PublicVerificationView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
+import { translations } from './lib/translations';
 
 import { 
   supabase,
@@ -37,6 +39,7 @@ import {
 export default function App() {
   // Theme state: DEFAULT THEME IS LIGHT THEME
   const [theme, setTheme] = useState('light');
+  const [lang, setLang] = useState('en');
   
   // Navigation & Layout states
   const [activeView, setActiveView] = useState('dashboard');
@@ -64,6 +67,7 @@ export default function App() {
   const [isCreateCaseOpen, setIsCreateCaseOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isMfaOpen, setIsMfaOpen] = useState(false);
+  const [isPanchnamaOpen, setIsPanchnamaOpen] = useState(false);
   const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -137,6 +141,12 @@ export default function App() {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
     showToast(`Switched to ${nextTheme.toUpperCase()} theme`, 'info');
+  };
+
+  const handleToggleLang = () => {
+    const nextLang = lang === 'en' ? 'hi' : 'en';
+    setLang(nextLang);
+    showToast(nextLang === 'hi' ? "भाषा बदलकर 'गृह मंत्रालय मानक हिंदी' की गई" : "Switched interface language to English", "info");
   };
 
   const handleToggleOffline = () => {
@@ -398,6 +408,8 @@ export default function App() {
           user={user}
           unreadNotifications={activities.length}
           onOpenNotifications={() => showToast(`${activities.length} Recent vault activities logged`, "info")}
+          lang={lang}
+          onToggleLang={handleToggleLang}
         />
 
         {/* Live Database Sync Indicator Banner */}
@@ -408,7 +420,9 @@ export default function App() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: '0.75rem'
+          fontSize: '0.75rem',
+          flexWrap: 'wrap',
+          gap: '0.5rem'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{
@@ -418,21 +432,31 @@ export default function App() {
               backgroundColor: 'var(--success)'
             }} className="animate-pulse-glow" />
             <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-              Supabase Live Real-Time Database Query Engine
+              {translations[lang].liveBannerTitle}
             </span>
             <span style={{ color: 'var(--text-muted)' }}>
               (Ref: dnxkbeadfnjeelujynar • Live Cases: {cases.length} • Docs: {documents.length})
             </span>
           </div>
 
-          <button
-            onClick={handleSeedDatabase}
-            className="cv-btn cv-btn-secondary cv-btn-sm"
-            style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}
-            title="Seed initial investigation records to Supabase database"
-          >
-            Sync / Seed Supabase Tables
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setIsPanchnamaOpen(true)}
+              className="cv-btn cv-btn-secondary cv-btn-sm"
+              style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', color: 'var(--accent-primary)' }}
+              title="Generate Crime Scene Seizure Memo under BNSS 2023"
+            >
+              📜 Generate Panchnama
+            </button>
+            <button
+              onClick={handleSeedDatabase}
+              className="cv-btn cv-btn-secondary cv-btn-sm"
+              style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}
+              title="Seed initial investigation records to Supabase database"
+            >
+              {translations[lang].syncSeedBtn}
+            </button>
+          </div>
         </div>
 
         {/* Page Body View */}
@@ -512,6 +536,13 @@ export default function App() {
           showToast("CERT-In / MHA MFA Security Code Authenticated ✓", "success");
           if (pendingAction) pendingAction();
         }}
+      />
+
+      <PanchnamaModal
+        isOpen={isPanchnamaOpen}
+        onClose={() => setIsPanchnamaOpen(false)}
+        onShowToast={showToast}
+        cases={cases}
       />
 
       {/* Global Toast Component */}

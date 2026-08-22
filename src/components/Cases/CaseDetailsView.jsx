@@ -15,17 +15,67 @@ import {
   Edit3, 
   FileSpreadsheet,
   AlertTriangle,
-  UserCheck
+  UserCheck,
+  Plus,
+  Move
 } from 'lucide-react';
 import { MOCK_EVIDENCE_GRAPH, MOCK_DOCUMENTS } from '../../data/mockData';
 
 export default function CaseDetailsView({ caseData, onBack, onSelectDocument, onShowToast }) {
-  const [activeTab, setActiveTab] = useState('graph'); // Default to the Evidence Relationship Graph to WOW the user!
+  const [activeTab, setActiveTab] = useState('graph');
   const [selectedNode, setSelectedNode] = useState(null);
+
+  // Interactive Drag-and-Drop Nodes State
+  const [nodes, setNodes] = useState([
+    { id: '1', label: `CASE #${caseData?.id || '2026-0789'}`, type: 'Case Docket', x: 400, y: 200, color: '#6366f1' },
+    { id: '2', label: 'Insp. Arjun Singh', type: 'Lead Officer', x: 200, y: 100, color: '#3b82f6' },
+    { id: '3', label: 'R. Mehta (Lab)', type: 'Forensic Analyst', x: 200, y: 300, color: '#3b82f6' },
+    { id: '4', label: "Vikram 'Ghost' Malhotra", type: 'Prime Suspect', x: 600, y: 100, color: '#ef4444' },
+    { id: '5', label: 'Dell Server Rack #01', type: 'Physical Evidence', x: 100, y: 200, color: '#10b981' },
+    { id: '6', label: 'Shell Account #99812', type: 'Financial Asset', x: 620, y: 280, color: '#8b5cf6' }
+  ]);
+
+  const [draggingNodeId, setDraggingNodeId] = useState(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   if (!caseData) return null;
 
   const caseDocs = MOCK_DOCUMENTS.filter(d => d.caseId === caseData.id || caseData.id === '2026-0789');
+
+  const handleMouseDown = (nodeId, e) => {
+    setDraggingNodeId(nodeId);
+    const node = nodes.find(n => n.id === nodeId);
+    setDragOffset({
+      x: e.clientX - node.x,
+      y: e.clientY - node.y
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!draggingNodeId) return;
+    const canvasRect = e.currentTarget.getBoundingClientRect();
+    const newX = e.clientX - canvasRect.left;
+    const newY = e.clientY - canvasRect.top;
+
+    setNodes(nodes.map(n => n.id === draggingNodeId ? { ...n, x: Math.max(40, Math.min(760, newX)), y: Math.max(40, Math.min(360, newY)) } : n));
+  };
+
+  const handleMouseUp = () => {
+    setDraggingNodeId(null);
+  };
+
+  const handleAddNode = () => {
+    const newNode = {
+      id: Date.now().toString(),
+      label: `Suspect Account #${Math.floor(100 + Math.random() * 900)}`,
+      type: 'Linked Node',
+      x: 350 + Math.random() * 100,
+      y: 150 + Math.random() * 100,
+      color: '#f59e0b'
+    };
+    setNodes([...nodes, newNode]);
+    onShowToast("Added new evidence node to interactive investigation canvas", "info");
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -99,7 +149,7 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
         overflowX: 'auto'
       }}>
         {[
-          { id: 'graph', label: 'Evidence Relationship Graph (USP 🕸️)', icon: Network },
+          { id: 'graph', label: 'Interactive Crime Mind Map (USP 🕸️)', icon: Network },
           { id: 'overview', label: 'Overview', icon: Briefcase },
           { id: 'documents', label: 'Documents & Evidence', icon: FileText, badge: caseDocs.length },
           { id: 'timeline', label: 'Investigation Timeline', icon: Clock },
@@ -141,97 +191,87 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
 
       {/* TAB CONTENTS */}
 
-      {/* 1. EVIDENCE RELATIONSHIP GRAPH (USP 🕸️) */}
+      {/* 1. INTERACTIVE DRAG & DROP EVIDENCE GRAPH (USP 🕸️) */}
       {activeTab === 'graph' && (
         <div className="cv-card" style={{ padding: '1.5rem', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h2 style={{ fontSize: '1.125rem', fontWeight: 800 }}>
-                🕸️ Interactive Evidence & Suspect Relationship Network
+                🕸️ Interactive Drag-and-Drop Investigation Canvas
               </h2>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Click on any node (Case, Officer, Evidence, Suspect, Report) to inspect linked criminal intelligence
+                Drag nodes around the canvas to map suspect connections, shell accounts, and evidence lines
               </p>
             </div>
-            <span className="cv-badge cv-badge-emerald">
-              Interactive Network View
-            </span>
+            <button onClick={handleAddNode} className="cv-btn cv-btn-secondary cv-btn-sm">
+              <Plus size={14} />
+              <span>Add Node</span>
+            </button>
           </div>
 
-          {/* SVG Relationship Graph Canvas */}
-          <div style={{
-            width: '100%',
-            height: '420px',
-            backgroundColor: 'var(--bg-subtle)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-color)',
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <svg viewBox="0 0 800 400" style={{ width: '100%', height: '100%' }}>
-              <defs>
-                <marker id="arrow" viewBox="0 0 10 10" refX="15" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text-muted)" />
-                </marker>
-              </defs>
-
-              {/* Connecting Edges */}
-              <line x1="400" y1="200" x2="200" y2="100" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4" markerEnd="url(#arrow)" />
-              <line x1="400" y1="200" x2="200" y2="300" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4" markerEnd="url(#arrow)" />
-              <line x1="400" y1="200" x2="600" y2="100" stroke="#ef4444" strokeWidth="3" markerEnd="url(#arrow)" />
-              <line x1="200" y1="100" x2="100" y2="200" stroke="#10b981" strokeWidth="2" />
-              <line x1="200" y1="300" x2="100" y2="200" stroke="#10b981" strokeWidth="2" />
-              <line x1="200" y1="300" x2="320" y2="340" stroke="#f59e0b" strokeWidth="2" />
-              <line x1="600" y1="100" x2="100" y2="200" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="2" />
-
-              {/* Nodes */}
-              {/* Central Case Node */}
-              <g onClick={() => setSelectedNode(MOCK_EVIDENCE_GRAPH.nodes[0])} style={{ cursor: 'pointer' }}>
-                <circle cx="400" cy="200" r="42" fill="#6366f1" stroke="#ffffff" strokeWidth="4" />
-                <text x="400" y="196" textAnchor="middle" fill="#ffffff" fontSize="11" fontWeight="800">CASE #2026-0789</text>
-                <text x="400" y="210" textAnchor="middle" fill="#ffffff" fontSize="9">Cyber Fraud</text>
-              </g>
-
-              {/* Officer 1 */}
-              <g onClick={() => setSelectedNode(MOCK_EVIDENCE_GRAPH.nodes[1])} style={{ cursor: 'pointer' }}>
-                <circle cx="200" cy="100" r="32" fill="#3b82f6" stroke="#ffffff" strokeWidth="3" />
-                <text x="200" y="98" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="700">Insp. Arjun</text>
-                <text x="200" y="110" textAnchor="middle" fill="#ffffff" fontSize="8">Lead Officer</text>
-              </g>
-
-              {/* Officer 2 */}
-              <g onClick={() => setSelectedNode(MOCK_EVIDENCE_GRAPH.nodes[2])} style={{ cursor: 'pointer' }}>
-                <circle cx="200" cy="300" r="32" fill="#3b82f6" stroke="#ffffff" strokeWidth="3" />
-                <text x="200" y="298" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="700">R. Mehta</text>
-                <text x="200" y="310" textAnchor="middle" fill="#ffffff" fontSize="8">Forensics</text>
-              </g>
-
-              {/* Suspect Node */}
-              <g onClick={() => setSelectedNode(MOCK_EVIDENCE_GRAPH.nodes[3])} style={{ cursor: 'pointer' }}>
-                <circle cx="600" cy="100" r="36" fill="#ef4444" stroke="#ffffff" strokeWidth="4" />
-                <text x="600" y="96" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="800">Karan Oberoi</text>
-                <text x="600" y="110" textAnchor="middle" fill="#ffffff" fontSize="8">Primary Suspect</text>
-              </g>
-
-              {/* Evidence 1 */}
-              <g onClick={() => setSelectedNode(MOCK_EVIDENCE_GRAPH.nodes[4])} style={{ cursor: 'pointer' }}>
-                <circle cx="100" cy="200" r="30" fill="#10b981" stroke="#ffffff" strokeWidth="3" />
-                <text x="100" y="198" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="700">Server Capture</text>
-                <text x="100" y="210" textAnchor="middle" fill="#ffffff" fontSize="8">Hardware Evid.</text>
-              </g>
-
-              {/* Report 1 */}
-              <g onClick={() => setSelectedNode(MOCK_EVIDENCE_GRAPH.nodes[6])} style={{ cursor: 'pointer' }}>
-                <circle cx="320" cy="340" r="28" fill="#f59e0b" stroke="#ffffff" strokeWidth="3" />
-                <text x="320" y="338" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="700">IP Packet Dump</text>
-                <text x="320" y="350" textAnchor="middle" fill="#ffffff" fontSize="8">Packet Log</text>
-              </g>
+          {/* Canvas Wrapper */}
+          <div 
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            style={{
+              width: '100%',
+              height: '440px',
+              backgroundColor: 'var(--bg-subtle)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border-color)',
+              position: 'relative',
+              overflow: 'hidden',
+              userSelect: 'none',
+              cursor: draggingNodeId ? 'grabbing' : 'default'
+            }}
+          >
+            {/* SVG Connecting Lines */}
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+              {nodes.slice(1).map((n, idx) => (
+                <line
+                  key={idx}
+                  x1={nodes[0].x}
+                  y1={nodes[0].y}
+                  x2={n.x}
+                  y2={n.y}
+                  stroke={n.color}
+                  strokeWidth="2.5"
+                  strokeDasharray={n.type.includes('Suspect') ? '5' : 'none'}
+                />
+              ))}
             </svg>
 
-            {/* Selected Node Details Drawer Overlay */}
+            {/* Draggable HTML Nodes */}
+            {nodes.map(n => (
+              <div
+                key={n.id}
+                onMouseDown={e => handleMouseDown(n.id, e)}
+                onClick={() => setSelectedNode(n)}
+                style={{
+                  position: 'absolute',
+                  left: `${n.x - 45}px`,
+                  top: `${n.y - 25}px`,
+                  padding: '0.5rem 0.875rem',
+                  borderRadius: 'var(--radius-full)',
+                  backgroundColor: n.color,
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.78125rem',
+                  boxShadow: 'var(--shadow-md)',
+                  cursor: 'grab',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  border: '2px solid #ffffff',
+                  zIndex: 20
+                }}
+              >
+                <Move size={12} style={{ opacity: 0.7 }} />
+                <span>{n.label}</span>
+              </div>
+            ))}
+
+            {/* Selected Node Details Drawer */}
             {selectedNode && (
               <div style={{
                 position: 'absolute',
@@ -242,7 +282,8 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
                 borderRadius: 'var(--radius-md)',
                 padding: '1rem',
                 width: '280px',
-                boxShadow: 'var(--shadow-lg)'
+                boxShadow: 'var(--shadow-lg)',
+                zIndex: 30
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
@@ -252,9 +293,6 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 800, marginTop: '0.25rem' }}>
                       {selectedNode.label}
                     </h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {selectedNode.sub}
-                    </p>
                   </div>
                   <button onClick={() => setSelectedNode(null)} className="cv-btn-icon" style={{ padding: '0.2rem' }}>
                     ✕
@@ -283,29 +321,17 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
               {caseData.summary}
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
-              <div style={{ padding: '0.875rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Date Initiated</span>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{caseData.dateCreated}</div>
-              </div>
-              <div style={{ padding: '0.875rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Jurisdiction</span>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Special Crime Cell - Zone 4</div>
-              </div>
-            </div>
           </div>
 
           <div className="cv-card">
             <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
               Assigned Investigation Officers
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <img src={caseData.leadOfficerAvatar} alt="Officer" style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
-                <div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>{caseData.assignedTo}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{caseData.assignedRole}</div>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <img src={caseData.leadOfficerAvatar} alt="Officer" style={{ width: '36px', height: '36px', borderRadius: '50%' }} />
+              <div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>{caseData.assignedTo}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{caseData.assignedRole}</div>
               </div>
             </div>
           </div>
@@ -326,7 +352,6 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
                   <th>Category</th>
                   <th>Classification</th>
                   <th>Uploaded By</th>
-                  <th>SHA-256 Checksum</th>
                   <th style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
@@ -339,9 +364,6 @@ export default function CaseDetailsView({ caseData, onBack, onSelectDocument, on
                       <span className="cv-badge cv-badge-indigo">{doc.classification}</span>
                     </td>
                     <td>{doc.uploadedBy}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem' }}>
-                      {doc.sha256.substring(0, 16)}...
-                    </td>
                     <td style={{ textAlign: 'right' }}>
                       <button onClick={() => onSelectDocument(doc)} className="cv-btn cv-btn-secondary cv-btn-sm">
                         Inspect
