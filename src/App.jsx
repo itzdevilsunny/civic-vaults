@@ -12,6 +12,7 @@ import IncidentResponseModal from './components/Modals/IncidentResponseModal';
 import MfaAuthModal from './components/Modals/MfaAuthModal';
 import PanchnamaModal from './components/Modals/PanchnamaModal';
 import NotificationsModal from './components/Modals/NotificationsModal';
+import ExportModal from './components/Modals/ExportModal';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -73,6 +74,7 @@ export default function App() {
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [isPanchnamaOpen, setIsPanchnamaOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -538,7 +540,7 @@ export default function App() {
 
       <DocumentViewerModal 
         document={selectedDocument}
-        isOpen={Boolean(selectedDocument) && !isShareOpen}
+        isOpen={Boolean(selectedDocument) && !isShareOpen && !isExportOpen}
         onClose={() => setSelectedDocument(null)}
         onShowToast={showToast}
       />
@@ -546,6 +548,13 @@ export default function App() {
       <ShareDocumentModal 
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
+        document={selectedDocument}
+        onShowToast={showToast}
+      />
+
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
         document={selectedDocument}
         onShowToast={showToast}
       />
