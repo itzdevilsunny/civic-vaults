@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileCheck, X, Shield, Printer, CheckCircle2, UserCheck, MapPin, Calendar, Hash, Mic, MicOff } from 'lucide-react';
 
 export default function PanchnamaModal({ isOpen, onClose, onShowToast, cases = [] }) {
-  const [caseId, setCaseId] = useState(cases[0]?.id || '2026-0789');
+  const [caseId, setCaseId] = useState('');
   const [seizureLocation, setSeizureLocation] = useState('Cyber Crime Scene, Plot 42, Sector 18, Gurugram');
   const [panch1Name, setPanch1Name] = useState('Ramesh Chandra (Independent Witness)');
   const [panch1Aadhaar, setPanch1Aadhaar] = useState('4512-8890-1234');
@@ -11,6 +11,14 @@ export default function PanchnamaModal({ isOpen, onClose, onShowToast, cases = [
   const [deviceDescription, setDeviceDescription] = useState('Seized 1x Dell PowerEdge Server Rack Hard Drive (SN: DE-991823) + 1x iPhone 15 Pro (IMEI: 3589123490123)');
   const [isGenerated, setIsGenerated] = useState(false);
   const [isListening, setIsListening] = useState(false);
+
+  useEffect(() => {
+    if (cases && cases.length > 0) {
+      setCaseId(cases[0].id);
+    } else {
+      setCaseId('2026-00421');
+    }
+  }, [cases]);
 
   if (!isOpen) return null;
 
@@ -99,9 +107,16 @@ export default function PanchnamaModal({ isOpen, onClose, onShowToast, cases = [
             <div className="cv-input-group">
               <label className="cv-label" style={{ color: '#0f172a' }}>Investigation Case Docket *</label>
               <select className="cv-select" value={caseId} onChange={e => setCaseId(e.target.value)} required>
-                {cases.map(c => (
-                  <option key={c.id} value={c.id}>Case #{c.id} - {c.title}</option>
-                ))}
+                {cases && cases.length > 0 ? (
+                  cases.map(c => (
+                    <option key={c.id} value={c.id}>Case #{c.id} - {c.title}</option>
+                  ))
+                ) : (
+                  <>
+                    <option value="2026-00421">Case #2026-00421 - Inter-State Financial Fraud & Cyber Intrusion</option>
+                    <option value="2026-00389">Case #2026-00389 - Narcotics Trafficking & Hawala Syndicate</option>
+                  </>
+                )}
               </select>
             </div>
 

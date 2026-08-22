@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, X, ShieldCheck, Lock, FileText, CheckCircle2, LockKeyhole, Hash, Loader2 } from 'lucide-react';
 
-export default function UploadModal({ isOpen, onClose, onUploadComplete, cases }) {
+export default function UploadModal({ isOpen, onClose, onUploadComplete, cases = [] }) {
   const [file, setFile] = useState(null);
   const [docType, setDocType] = useState('Evidence');
-  const [selectedCaseId, setSelectedCaseId] = useState(cases[0]?.id || '2026-0789');
+  const [selectedCaseId, setSelectedCaseId] = useState('');
   const [classification, setClassification] = useState('Highly Restricted');
   const [legalHold, setLegalHold] = useState(true);
   const [description, setDescription] = useState('');
   const [isHashing, setIsHashing] = useState(false);
   const [calculatedHash, setCalculatedHash] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (cases && cases.length > 0) {
+      setSelectedCaseId(cases[0].id);
+    } else {
+      setSelectedCaseId('2026-00421');
+    }
+  }, [cases]);
 
   if (!isOpen) return null;
 
@@ -48,7 +56,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, cases }
       onUploadComplete({
         name: file.name,
         type: docType,
-        caseId: selectedCaseId,
+        caseId: selectedCaseId || '2026-00421',
         classification,
         legalHold,
         size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
@@ -172,11 +180,19 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, cases }
                 onChange={e => setSelectedCaseId(e.target.value)}
                 required
               >
-                {cases.map(c => (
-                  <option key={c.id} value={c.id}>
-                    Case #{c.id} - {c.title}
-                  </option>
-                ))}
+                {cases && cases.length > 0 ? (
+                  cases.map(c => (
+                    <option key={c.id} value={c.id}>
+                      Case #{c.id} - {c.title}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="2026-00421">Case #2026-00421 - Inter-State Financial Fraud & Cyber Intrusion</option>
+                    <option value="2026-00389">Case #2026-00389 - Narcotics Trafficking & Hawala Syndicate</option>
+                    <option value="2026-00312">Case #2026-00312 - Armed Robbery & Contraband Seizure</option>
+                  </>
+                )}
               </select>
             </div>
 
