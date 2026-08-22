@@ -21,6 +21,7 @@ import AuditTrailView from './components/Security/AuditTrailView';
 import SecurityLogsView from './components/Security/SecurityLogsView';
 import ReportsView from './components/Reports/ReportsView';
 import PublicVerificationView from './components/Security/PublicVerificationView';
+import ChainOfCustodyView from './components/ChainOfCustody/ChainOfCustodyView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -323,6 +324,14 @@ export default function App() {
             onOpenCreateCase={() => setIsCreateCaseOpen(true)}
             onShowToast={showToast}
             onSeedDatabase={handleSeedDatabase}
+          />
+        );
+      case 'chain-of-custody':
+        return (
+          <ChainOfCustodyView 
+            documents={documents}
+            onShowToast={showToast}
+            onSelectDocument={(d) => setSelectedDocument(d)}
           />
         );
       case 'documents':

@@ -46,6 +46,7 @@ export default function Sidebar({
       title: "CASE MANAGEMENT",
       items: [
         { id: 'cases', label: 'All Cases', icon: Briefcase, badge: casesCount.toString() },
+        { id: 'chain-of-custody', label: 'Chain of Custody', icon: ShieldCheck, badge: 'USP 🥇' },
         { id: 'create-case', label: 'Create New Case', icon: PlusCircle, isAction: true, action: onOpenCreateCase },
         { id: 'assignments', label: 'Case Assignments', icon: Users }
       ]
