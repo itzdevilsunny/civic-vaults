@@ -49,7 +49,6 @@ export default function App() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [activities, setActivities] = useState([]);
   const [securityLogs, setSecurityLogs] = useState(MOCK_SECURITY_LOGS);
-  const [unreadNotifications, setUnreadNotifications] = useState(3);
 
   // Selected item states
   const [selectedCase, setSelectedCase] = useState(null);
@@ -353,6 +352,10 @@ export default function App() {
         isCollapsed={isSidebarCollapsed}
         onOpenCreateCase={() => setIsCreateCaseOpen(true)}
         onOpenUploadModal={() => setIsUploadOpen(true)}
+        casesCount={cases.length}
+        documentsCount={documents.length}
+        activitiesCount={activities.length}
+        securityLogsCount={securityLogs.length}
       />
 
       {/* Main Content Area */}
@@ -436,6 +439,9 @@ export default function App() {
         onClose={() => setIsSearchOpen(false)}
         onSelectCase={(c) => setSelectedCase(c)}
         onSelectDocument={(d) => setSelectedDocument(d)}
+        cases={cases}
+        documents={documents}
+        securityLogs={securityLogs}
       />
 
       <UploadModal 

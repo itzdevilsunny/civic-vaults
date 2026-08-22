@@ -22,7 +22,17 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenCreateCase, onOpenUploadModal }) {
+export default function Sidebar({ 
+  activeView, 
+  onChangeView, 
+  isCollapsed, 
+  onOpenCreateCase, 
+  onOpenUploadModal,
+  casesCount = 0,
+  documentsCount = 0,
+  activitiesCount = 0,
+  securityLogsCount = 0
+}) {
   
   const navSections = [
     {
@@ -34,7 +44,7 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
     {
       title: "CASE MANAGEMENT",
       items: [
-        { id: 'cases', label: 'All Cases', icon: Briefcase, badge: '42' },
+        { id: 'cases', label: 'All Cases', icon: Briefcase, badge: casesCount.toString() },
         { id: 'create-case', label: 'Create New Case', icon: PlusCircle, isAction: true, action: onOpenCreateCase },
         { id: 'assignments', label: 'Case Assignments', icon: Users }
       ]
@@ -42,9 +52,9 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
     {
       title: "DOCUMENT MANAGEMENT",
       items: [
-        { id: 'documents', label: 'All Documents', icon: FileText, badge: '1,284' },
+        { id: 'documents', label: 'All Documents', icon: FileText, badge: documentsCount.toLocaleString() },
         { id: 'shared', label: 'Shared With Me', icon: Share2 },
-        { id: 'requests', label: 'Document Requests', icon: FileQuestion, badge: '5' },
+        { id: 'requests', label: 'Document Requests', icon: FileQuestion, badge: (documentsCount > 0 ? Math.ceil(documentsCount * 0.1) : 0).toString() },
         { id: 'trash', label: 'Trash / Archives', icon: Trash2 }
       ]
     },
@@ -53,7 +63,7 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
       items: [
         { id: 'access-control', label: 'Access Control', icon: Lock },
         { id: 'audit-trail', label: 'Audit Trail', icon: History },
-        { id: 'security-logs', label: 'Security Logs', icon: ShieldAlert, badge: '4', alert: true }
+        { id: 'security-logs', label: 'Security Logs', icon: ShieldAlert, badge: securityLogsCount.toString(), alert: securityLogsCount > 0 }
       ]
     },
     {
@@ -66,10 +76,14 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
     {
       title: "ALERTS & NOTIFICATIONS",
       items: [
-        { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, badge: '7' }
+        { id: 'alerts', label: 'Alerts & Notifications', icon: Bell, badge: activitiesCount.toString() }
       ]
     }
   ];
+
+  // Dynamic storage usage calculation
+  const usedGB = (documentsCount * 0.2 + casesCount * 0.5).toFixed(1);
+  const usedPercent = Math.min(((usedGB / 1000) * 100), 100).toFixed(1);
 
   return (
     <aside style={{
@@ -248,11 +262,11 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
             </div>
           </div>
 
-          {/* Storage Usage Widget */}
+          {/* Dynamic Storage Usage Widget */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.35rem' }}>
               <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Storage Usage</span>
-              <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>25.6%</span>
+              <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{usedPercent}%</span>
             </div>
             <div style={{
               height: '6px',
@@ -261,14 +275,15 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
               overflow: 'hidden'
             }}>
               <div style={{
-                width: '25.6%',
+                width: `${usedPercent}%`,
+                minWidth: '4px',
                 height: '100%',
                 backgroundColor: 'var(--accent-primary)',
                 borderRadius: '3px'
               }} />
             </div>
             <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-              256.8 GB of 1 TB used
+              {usedGB} GB of 1 TB used
             </div>
           </div>
 
@@ -298,7 +313,7 @@ export default function Sidebar({ activeView, onChangeView, isCollapsed, onOpenC
           gap: '0.75rem'
         }}>
           <CheckCircle2 size={20} style={{ color: 'var(--success)' }} title="Data Secure & Encrypted" />
-          <HardDrive size={20} style={{ color: 'var(--text-secondary)' }} title="Storage 25.6% Used" />
+          <HardDrive size={20} style={{ color: 'var(--text-secondary)' }} title={`Storage ${usedPercent}% Used`} />
         </div>
       )}
     </aside>

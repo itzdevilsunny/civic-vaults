@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X, Briefcase, FileText, User, ShieldAlert, ArrowRight } from 'lucide-react';
-import { MOCK_CASES, MOCK_DOCUMENTS, MOCK_SECURITY_LOGS } from '../../data/mockData';
 
-export default function SearchModal({ isOpen, onClose, onSelectCase, onSelectDocument }) {
+export default function SearchModal({ 
+  isOpen, 
+  onClose, 
+  onSelectCase, 
+  onSelectDocument,
+  cases = [],
+  documents = [],
+  securityLogs = []
+}) {
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
@@ -11,10 +18,6 @@ export default function SearchModal({ isOpen, onClose, onSelectCase, onSelectDoc
       if (e.key === 'Escape' && isOpen) {
         onClose();
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (isOpen) onClose(); else openSearch();
-      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -22,24 +25,26 @@ export default function SearchModal({ isOpen, onClose, onSelectCase, onSelectDoc
 
   if (!isOpen) return null;
 
-  const filteredCases = MOCK_CASES.filter(c => 
-    c.id.toLowerCase().includes(query.toLowerCase()) ||
-    c.title.toLowerCase().includes(query.toLowerCase()) ||
-    c.assignedTo.toLowerCase().includes(query.toLowerCase())
+  const filteredCases = cases.filter(c => 
+    (c.id || '').toLowerCase().includes(query.toLowerCase()) ||
+    (c.title || '').toLowerCase().includes(query.toLowerCase()) ||
+    (c.assignedTo || '').toLowerCase().includes(query.toLowerCase())
   );
 
-  const filteredDocs = MOCK_DOCUMENTS.filter(d =>
-    d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.caseId.toLowerCase().includes(query.toLowerCase()) ||
-    d.uploadedBy.toLowerCase().includes(query.toLowerCase()) ||
-    d.type.toLowerCase().includes(query.toLowerCase())
+  const filteredDocs = documents.filter(d =>
+    (d.name || '').toLowerCase().includes(query.toLowerCase()) ||
+    (d.caseId || '').toLowerCase().includes(query.toLowerCase()) ||
+    (d.uploadedBy || '').toLowerCase().includes(query.toLowerCase()) ||
+    (d.type || '').toLowerCase().includes(query.toLowerCase())
   );
 
-  const filteredLogs = MOCK_SECURITY_LOGS.filter(l =>
-    l.event.toLowerCase().includes(query.toLowerCase()) ||
-    l.user.toLowerCase().includes(query.toLowerCase()) ||
-    l.ipAddress.toLowerCase().includes(query.toLowerCase())
+  const filteredLogs = securityLogs.filter(l =>
+    (l.event || '').toLowerCase().includes(query.toLowerCase()) ||
+    (l.user || '').toLowerCase().includes(query.toLowerCase()) ||
+    (l.ipAddress || '').toLowerCase().includes(query.toLowerCase())
   );
+
+  const totalIndexed = cases.length + documents.length;
 
   return (
     <div className="cv-modal-backdrop" onClick={onClose}>
@@ -238,9 +243,9 @@ export default function SearchModal({ isOpen, onClose, onSelectCase, onSelectDoc
           {filteredCases.length === 0 && filteredDocs.length === 0 && filteredLogs.length === 0 && (
             <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
               <Search size={36} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-              <p style={{ fontWeight: 600 }}>No results found matching "{query}"</p>
+              <p style={{ fontWeight: 600 }}>No live records found matching "{query}"</p>
               <p style={{ fontSize: '0.8125rem', marginTop: '0.25rem' }}>
-                Try searching by Case ID (e.g. 2026-0789), Document name, Officer name, or IP address.
+                Try searching by Case ID, Document name, Officer name, or IP address.
               </p>
             </div>
           )}
@@ -249,7 +254,7 @@ export default function SearchModal({ isOpen, onClose, onSelectCase, onSelectDoc
         {/* Footer Hint */}
         <div className="cv-modal-footer" style={{ justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
           <span>Tip: Press <kbd style={{ fontFamily: 'var(--font-mono)' }}>Esc</kbd> to close</span>
-          <span>CaseVault Global Index: 1,284 Indexed Items</span>
+          <span>CaseVault Live Index: {totalIndexed} Live Items</span>
         </div>
       </div>
     </div>
