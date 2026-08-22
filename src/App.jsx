@@ -14,6 +14,7 @@ import PanchnamaModal from './components/Modals/PanchnamaModal';
 import NotificationsModal from './components/Modals/NotificationsModal';
 import ExportModal from './components/Modals/ExportModal';
 import SihJudgeTourModal from './components/Common/SihJudgeTourModal';
+import AiAssistantDrawer from './components/Common/AiAssistantDrawer';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -78,6 +79,7 @@ export default function App() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isJudgeTourOpen, setIsJudgeTourOpen] = useState(false);
+  const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -457,6 +459,7 @@ export default function App() {
           lang={lang}
           onToggleLang={handleToggleLang}
           onOpenJudgeTour={() => setIsJudgeTourOpen(true)}
+          onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
         />
 
         {/* Live Database Sync Indicator Banner */}
@@ -609,6 +612,12 @@ export default function App() {
         isOpen={isJudgeTourOpen}
         onClose={() => setIsJudgeTourOpen(false)}
         onChangeView={(v) => { setSelectedCase(null); setActiveView(v); }}
+        onShowToast={showToast}
+      />
+
+      <AiAssistantDrawer
+        isOpen={isAiAssistantOpen}
+        onClose={() => setIsAiAssistantOpen(false)}
         onShowToast={showToast}
       />
 

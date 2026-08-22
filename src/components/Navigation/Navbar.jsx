@@ -13,7 +13,8 @@ import {
   Lock,
   UserCheck,
   Globe,
-  Award
+  Award,
+  Sparkles
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -29,7 +30,8 @@ export default function Navbar({
   onOpenNotifications,
   lang = 'en',
   onToggleLang,
-  onOpenJudgeTour
+  onOpenJudgeTour,
+  onOpenAiAssistant
 }) {
   return (
     <header className="cv-navbar" style={{
@@ -67,7 +69,7 @@ export default function Navbar({
             border: '1px solid var(--border-color)',
             borderRadius: 'var(--radius-md)',
             padding: '0.5rem 0.875rem',
-            maxWidth: '380px',
+            maxWidth: '340px',
             width: '100%',
             cursor: 'pointer',
             transition: 'all var(--transition-fast)'
@@ -76,7 +78,7 @@ export default function Navbar({
         >
           <Search size={17} style={{ color: 'var(--text-muted)' }} />
           <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', flex: 1 }}>
-            {lang === 'hi' ? 'मामले, साक्ष्य, अधिकारी खोजें...' : 'Search cases, documents, officers...'}
+            {lang === 'hi' ? 'मामले, साक्ष्य, अधिकारी खोजें...' : 'Search cases, documents...'}
           </span>
           <kbd style={{
             fontSize: '0.7rem',
@@ -94,14 +96,36 @@ export default function Navbar({
       </div>
 
       {/* Right Navigation: Language, Status, Theme, Alerts & User Profile */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         
+        {/* 🤖 Gemini AI Legal Assistant Button */}
+        <button
+          onClick={onOpenAiAssistant}
+          style={{
+            cursor: 'pointer',
+            padding: '0.4rem 0.65rem',
+            fontWeight: 800,
+            fontSize: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            backgroundColor: 'rgba(99,102,241,0.12)',
+            color: 'var(--accent-primary)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--accent-primary)'
+          }}
+          title="Open Google Gemini 1.5 AI Legal & Forensic Assistant"
+        >
+          <Sparkles size={14} />
+          <span>🤖 Gemini AI</span>
+        </button>
+
         {/* 🏆 SIH Judge 45-Second Tour Walkthrough Button */}
         <button
           onClick={onOpenJudgeTour}
           style={{
             cursor: 'pointer',
-            padding: '0.4rem 0.75rem',
+            padding: '0.4rem 0.65rem',
             fontWeight: 900,
             fontSize: '0.75rem',
             display: 'flex',
@@ -125,7 +149,7 @@ export default function Navbar({
           className="cv-badge cv-badge-indigo"
           style={{ 
             cursor: 'pointer', 
-            padding: '0.4rem 0.65rem',
+            padding: '0.4rem 0.6rem',
             fontWeight: 800,
             fontSize: '0.75rem',
             display: 'flex',
@@ -145,16 +169,16 @@ export default function Navbar({
         <button
           onClick={onToggleOffline}
           className={`cv-badge ${isOffline ? 'cv-badge-amber' : 'cv-badge-emerald'}`}
-          style={{ cursor: 'pointer', border: '1px solid currentColor', padding: '0.35rem 0.65rem' }}
+          style={{ cursor: 'pointer', border: '1px solid currentColor', padding: '0.35rem 0.6rem' }}
           title={isOffline ? "Currently in Offline Field Mode - Actions queued locally" : "Online & Synchronized with Vault Server"}
         >
           {isOffline ? <WifiOff size={14} /> : <Wifi size={14} />}
           <span style={{ fontSize: '0.75rem' }}>
-            {isOffline ? "Offline Field Mode" : "Vault Sync: Live"}
+            {isOffline ? "Offline Mode" : "Vault Sync: Live"}
           </span>
         </button>
 
-        <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 0.2rem' }} />
+        <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 0.15rem' }} />
 
         {/* Light/Dark Theme Toggle */}
         <button
