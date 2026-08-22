@@ -31,6 +31,7 @@ import LegalHoldView from './components/LegalHold/LegalHoldView';
 import IntelligenceGraphView from './components/Intelligence/IntelligenceGraphView';
 import BackupView from './components/Backup/BackupView';
 import SystemHealthView from './components/Health/SystemHealthView';
+import CasePackageExportView from './components/Export/CasePackageExportView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -52,6 +53,7 @@ const VIEW_ORDER = [
   'cases', 
   'intelligence-graph',
   'documents', 
+  'case-package-export',
   'chain-of-custody', 
   'approvals-inbox', 
   'legal-hold', 
@@ -391,6 +393,14 @@ export default function App() {
       case 'intelligence-graph':
         return (
           <IntelligenceGraphView 
+            cases={cases}
+            documents={documents}
+            onShowToast={showToast}
+          />
+        );
+      case 'case-package-export':
+        return (
+          <CasePackageExportView 
             cases={cases}
             documents={documents}
             onShowToast={showToast}
