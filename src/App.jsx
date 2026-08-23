@@ -588,6 +588,10 @@ export default function App() {
           onOpenAiAssistant={() => setIsAiAssistantOpen(true)}
           onNavigateBack={handleNavigateBack}
           onNavigateNext={handleNavigateNext}
+          onShowToast={showToast}
+          onOpenAccessControl={() => { setSelectedCase(null); setActiveView('access-control'); }}
+          onOpenAuditTrail={() => { setSelectedCase(null); setActiveView('audit-trail'); }}
+          onOpenMfa={() => setIsMfaOpen(true)}
         />
 
         {/* Live Database Sync Indicator Banner */}
