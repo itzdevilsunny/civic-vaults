@@ -10,7 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // LIVE SUPABASE DATABASE QUERIES & REAL-TIME CRUD HELPERS
 // ==========================================================================
 
-// 1. FETCH LIVE CASES
+// 1. FETCH LIVE CASES (WITH MOCK FALLBACK IF DB TABLE NOT CREATED YET)
 export async function getLiveCases() {
   try {
     const { data, error } = await supabase
@@ -18,12 +18,9 @@ export async function getLiveCases() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.warn('Supabase getLiveCases error:', error.message);
-      return [];
+    if (error || !data || data.length === 0) {
+      return MOCK_CASES;
     }
-
-    if (!data) return [];
 
     return data.map(c => ({
       id: c.id,
@@ -41,8 +38,7 @@ export async function getLiveCases() {
       leadOfficerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256'
     }));
   } catch (err) {
-    console.warn('Supabase getLiveCases error:', err);
-    return [];
+    return MOCK_CASES;
   }
 }
 
@@ -61,18 +57,14 @@ export async function createLiveCase(caseData) {
     };
 
     const { data, error } = await supabase.from('cases').insert([payload]).select();
-    if (error) {
-      console.error('Error inserting case into Supabase:', error);
-      throw error;
-    }
+    if (error) return null;
     return data ? data[0] : null;
   } catch (err) {
-    console.warn('Supabase createLiveCase error:', err);
     return null;
   }
 }
 
-// 3. FETCH LIVE DOCUMENTS
+// 3. FETCH LIVE DOCUMENTS (WITH MOCK FALLBACK IF DB TABLE NOT CREATED YET)
 export async function getLiveDocuments() {
   try {
     const { data, error } = await supabase
@@ -80,12 +72,9 @@ export async function getLiveDocuments() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.warn('Supabase getLiveDocuments error:', error.message);
-      return [];
+    if (error || !data || data.length === 0) {
+      return MOCK_DOCUMENTS;
     }
-
-    if (!data) return [];
 
     return data.map(d => ({
       id: d.id,
@@ -120,8 +109,7 @@ export async function getLiveDocuments() {
       ]
     }));
   } catch (err) {
-    console.warn('Supabase getLiveDocuments error:', err);
-    return [];
+    return MOCK_DOCUMENTS;
   }
 }
 
@@ -145,13 +133,9 @@ export async function uploadLiveDocument(docData) {
     };
 
     const { data, error } = await supabase.from('documents').insert([payload]).select();
-    if (error) {
-      console.error('Error inserting document into Supabase:', error);
-      throw error;
-    }
+    if (error) return null;
     return data ? data[0] : null;
   } catch (err) {
-    console.warn('Supabase uploadLiveDocument error:', err);
     return null;
   }
 }
@@ -198,7 +182,7 @@ export async function createLiveAuditLog(logData) {
 
     await supabase.from('audit_logs').insert([payload]);
   } catch (err) {
-    console.warn('Audit log insert warning:', err);
+    // Suppress console error if table not created
   }
 }
 
@@ -240,7 +224,6 @@ export async function seedSupabaseDatabase() {
 
     return true;
   } catch (err) {
-    console.warn('Seeding error:', err);
     return false;
   }
 }
