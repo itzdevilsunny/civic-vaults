@@ -33,6 +33,8 @@ import BackupView from './components/Backup/BackupView';
 import SystemHealthView from './components/Health/SystemHealthView';
 import CasePackageExportView from './components/Export/CasePackageExportView';
 import DocumentLifecycleView from './components/Lifecycle/DocumentLifecycleView';
+import EvidenceIntakeView from './components/Intake/EvidenceIntakeView';
+import EvidenceLockerView from './components/Intake/EvidenceLockerView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
@@ -51,6 +53,8 @@ import {
 
 const VIEW_ORDER = [
   'dashboard', 
+  'evidence-intake',
+  'evidence-locker',
   'cases', 
   'intelligence-graph',
   'documents', 
@@ -429,6 +433,22 @@ export default function App() {
             onShowToast={showToast}
             onOpenAlert={(alert) => setSelectedAlert(alert)}
             onSeedDatabase={handleSeedDatabase}
+          />
+        );
+      case 'evidence-intake':
+        return (
+          <EvidenceIntakeView 
+            cases={cases}
+            onShowToast={showToast}
+            onNavigateLocker={() => setActiveView('evidence-locker')}
+          />
+        );
+      case 'evidence-locker':
+        return (
+          <EvidenceLockerView 
+            documents={documents}
+            onShowToast={showToast}
+            onOpenIntake={() => setActiveView('evidence-intake')}
           />
         );
       case 'cases':

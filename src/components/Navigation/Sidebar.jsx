@@ -26,7 +26,8 @@ import {
   Database,
   Activity,
   Package,
-  GitCommit
+  GitCommit,
+  Inbox
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -49,8 +50,10 @@ export default function Sidebar({
       ]
     },
     {
-      title: "CASE MANAGEMENT",
+      title: "EVIDENCE & CASE MANAGEMENT",
       items: [
+        { id: 'evidence-intake', label: 'Evidence Intake Desk', icon: Inbox, badge: 'NIST / NIJ 📥' },
+        { id: 'evidence-locker', label: 'Digital Evidence Locker', icon: HardDrive, badge: 'Custody 🔐' },
         { id: 'cases', label: 'All Cases', icon: Briefcase, badge: casesCount.toString() },
         { id: 'intelligence-graph', label: 'Intelligence Graph', icon: Network, badge: '🔥 Advanced' },
         { id: 'chain-of-custody', label: 'Chain of Custody', icon: ShieldCheck, badge: 'USP 🥇' },
