@@ -24,6 +24,24 @@ export default function AuditTrailView({ onShowToast, liveLogs = [] }) {
     return matchesSearch && matchesAction;
   });
 
+  const handleExportCsv = () => {
+    const headers = "Event ID,Timestamp,User Officer,Action Performed,Target File,Case ID,IP Address,Result\n";
+    const rows = filteredLogs.map(l => 
+      `"${l.id}","${l.timestamp}","${l.user}","${l.action}","${l.target}","${l.caseId}","${l.ip}","${l.result}"`
+    ).join("\n");
+
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CaseVault_NIST_Audit_Trail_${Date.now()}.csv`;
+    a.click();
+
+    if (onShowToast) {
+      onShowToast("✓ NIST SP 800-92 Audit Trail CSV Exported to Downloads", "success");
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
@@ -39,11 +57,12 @@ export default function AuditTrailView({ onShowToast, liveLogs = [] }) {
         </div>
 
         <button 
-          onClick={() => onShowToast("Exported Cryptographic System Audit Report PDF/CSV", "success")}
+          onClick={handleExportCsv}
           className="cv-btn cv-btn-primary"
+          style={{ fontWeight: 800 }}
         >
           <FileSpreadsheet size={16} />
-          <span>Export Audit Report</span>
+          <span>Export Audit Trail CSV</span>
         </button>
       </div>
 

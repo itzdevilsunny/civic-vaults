@@ -15,7 +15,11 @@ import {
   Download,
   Shield,
   Eye,
-  Key
+  Key,
+  Printer,
+  ChevronDown,
+  ChevronUp,
+  Award
 } from 'lucide-react';
 
 export default function ChainOfCustodyView({ documents = [], onShowToast, onSelectDocument }) {
@@ -25,6 +29,8 @@ export default function ChainOfCustodyView({ documents = [], onShowToast, onSele
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
   const [simulateTamper, setSimulateTamper] = useState(false);
+  const [expandedEventId, setExpandedEventId] = useState(null);
+  const [showCertificate, setShowCertificate] = useState(false);
 
   // Sample or Derived Chain of Custody Timeline Events
   const defaultEvents = [
@@ -159,6 +165,10 @@ export default function ChainOfCustodyView({ documents = [], onShowToast, onSele
     }, 1200);
   };
 
+  const handlePrintCertificate = () => {
+    setShowCertificate(true);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
@@ -178,9 +188,17 @@ export default function ChainOfCustodyView({ documents = [], onShowToast, onSele
           </p>
         </div>
 
-        {/* Target Document Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-muted)' }}>Target Evidence:</span>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button 
+            onClick={handlePrintCertificate}
+            className="cv-btn cv-btn-secondary"
+            style={{ fontWeight: 800 }}
+          >
+            <Printer size={16} />
+            <span>Export 65B Statutory Certificate</span>
+          </button>
+
+          {/* Target Document Selector */}
           <select 
             className="cv-select"
             value={selectedDoc?.id || ''}
@@ -188,7 +206,7 @@ export default function ChainOfCustodyView({ documents = [], onShowToast, onSele
               const doc = documents.find(d => d.id === e.target.value);
               if (doc) setSelectedDoc(doc);
             }}
-            style={{ width: 'auto', minWidth: '220px' }}
+            style={{ width: 'auto', minWidth: '200px' }}
           >
             {documents.map(d => (
               <option key={d.id} value={d.id}>{d.name} (Case #{d.caseId})</option>
@@ -379,53 +397,134 @@ export default function ChainOfCustodyView({ documents = [], onShowToast, onSele
                 <th>IP / Device</th>
                 <th>Digital Signature</th>
                 <th>Status</th>
+                <th>Inspect Payload</th>
               </tr>
             </thead>
             <tbody>
-              {filteredEvents.map(event => (
-                <tr key={event.id}>
-                  <td style={{ fontSize: '0.78125rem', color: 'var(--text-secondary)' }}>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{event.time}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{event.date}</div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 700 }}>{event.officer}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                      {event.userId}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="cv-badge cv-badge-indigo" style={{ fontWeight: 700 }}>
-                      {event.action}
-                    </span>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                      {event.reason}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ fontWeight: 700 }}>{event.evidence}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
-                      Case #{event.caseId}
-                    </div>
-                  </td>
-                  <td style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
-                    <div>{event.ip}</div>
-                    <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>{event.device}</div>
-                  </td>
-                  <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent-primary)' }}>
-                    {event.digitalSignature}
-                  </td>
-                  <td>
-                    <span className="cv-badge cv-badge-emerald" style={{ fontWeight: 800 }}>
-                      {event.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {filteredEvents.map(event => {
+                const isExpanded = expandedEventId === event.id;
+
+                return (
+                  <React.Fragment key={event.id}>
+                    <tr>
+                      <td style={{ fontSize: '0.78125rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{event.time}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{event.date}</div>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 700 }}>{event.officer}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                          {event.userId}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="cv-badge cv-badge-indigo" style={{ fontWeight: 700 }}>
+                          {event.action}
+                        </span>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                          {event.reason}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 700 }}>{event.evidence}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
+                          Case #{event.caseId}
+                        </div>
+                      </td>
+                      <td style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+                        <div>{event.ip}</div>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>{event.device}</div>
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent-primary)' }}>
+                        {event.digitalSignature}
+                      </td>
+                      <td>
+                        <span className="cv-badge cv-badge-emerald" style={{ fontWeight: 800 }}>
+                          {event.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
+                          className="cv-btn cv-btn-secondary cv-btn-sm"
+                          style={{ fontSize: '0.7rem' }}
+                        >
+                          {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* EXPANDABLE PAYLOAD INSPECTOR */}
+                    {isExpanded && (
+                      <tr style={{ backgroundColor: 'var(--bg-subtle)' }}>
+                        <td colSpan={8} style={{ padding: '1rem 1.5rem' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.875rem', fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
+                            <div style={{ backgroundColor: 'var(--bg-surface)', padding: '0.65rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 800 }}>PREVIOUS LEDGER HASH</div>
+                              <div style={{ color: 'var(--text-primary)', wordBreak: 'break-all', marginTop: '0.2rem' }}>{event.prevHash}</div>
+                            </div>
+                            <div style={{ backgroundColor: 'var(--bg-surface)', padding: '0.65rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 800 }}>CURRENT LEDGER HASH</div>
+                              <div style={{ color: 'var(--accent-primary)', wordBreak: 'break-all', marginTop: '0.2rem' }}>{event.currentHash}</div>
+                            </div>
+                            <div style={{ backgroundColor: 'var(--bg-surface)', padding: '0.65rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 800 }}>ECC DIGITAL SIGNATURE SEAL</div>
+                              <div style={{ color: 'var(--success-dark)', fontWeight: 800, marginTop: '0.2rem' }}>{event.digitalSignature}</div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* STATUTORY 65B CERTIFICATE MODAL */}
+      {showCertificate && (
+        <div className="cv-modal-backdrop" style={{ zIndex: 999 }} onClick={() => setShowCertificate(false)}>
+          <div className="cv-modal cv-modal-md" onClick={e => e.stopPropagation()} style={{ padding: '2rem', background: '#ffffff', color: '#0f172a' }}>
+            <div style={{ textAlign: 'center', borderBottom: '2px solid #0f172a', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+              <Award size={36} style={{ color: '#4f46e5', marginBottom: '0.35rem' }} />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '0.04em' }}>
+                CERTIFICATE UNDER SECTION 65B / BSA 2023
+              </h2>
+              <p style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>
+                Admissibility of Electronic Records in Indian Courts of Law
+              </p>
+            </div>
+
+            <div style={{ fontSize: '0.8125rem', lineHeight: 1.6, color: '#334155', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <p>
+                I, <strong>Inspector Arjun Singh</strong> (Senior Investigation Officer, Badge #IND-POL-8819), hereby certify under Section 65B of the Indian Evidence Act / BSA 2023 that:
+              </p>
+              <ol style={{ paddingLeft: '1.25rem', margin: 0 }}>
+                <li>The digital evidence file <strong>{selectedDoc?.name || "Evidence_01.jpg"}</strong> (Case #{selectedDoc?.caseId || "2026-0789"}) was ingested into the CaseVault immutable ledger on 22 Aug 2026.</li>
+                <li>The computer system and encryption hardware were operating properly at all material times.</li>
+                <li>The raw SHA-256 checksum (<code>{(selectedDoc?.sha256 || "8f4c2b9a...").substring(0, 24)}...</code>) has remained 100% unchanged.</li>
+              </ol>
+
+              <div style={{ marginTop: '1rem', padding: '0.875rem', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+                <div>STATUTORY VERIFICATION HASH: {selectedDoc?.sha256 || "8f4c2b9a1c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f"}</div>
+                <div>DIGITAL SIGNATURE SEAL: SIG-8892-STATUTORY-65B-VALID</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
+              <button onClick={() => setShowCertificate(false)} className="cv-btn cv-btn-secondary">
+                Close
+              </button>
+              <button onClick={() => window.print()} className="cv-btn cv-btn-primary" style={{ fontWeight: 800 }}>
+                <Printer size={16} />
+                <span>Print Statutory Certificate</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Search, Award, CheckCircle2, XCircle, FileText, Hash, Lock, Printer, ArrowRight, Shield, QrCode } from 'lucide-react';
+import { ShieldCheck, Search, Award, CheckCircle2, XCircle, FileText, Hash, Lock, Printer, ArrowRight, Shield, QrCode, Sparkles } from 'lucide-react';
 
 export default function PublicVerificationView({ onShowToast }) {
   const [query, setQuery] = useState('');
@@ -7,8 +7,8 @@ export default function PublicVerificationView({ onShowToast }) {
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = (e) => {
-    e.preventDefault();
-    if (!query) return;
+    if (e) e.preventDefault();
+    const searchQuery = query || "CERT-2026-MHA-9821";
 
     setIsSearching(true);
     setTimeout(() => {
@@ -17,7 +17,7 @@ export default function PublicVerificationView({ onShowToast }) {
       // Verification logic against cryptographic ledger
       setVerificationResult({
         status: "VERIFIED",
-        certRef: query.toUpperCase().startsWith("CERT-") ? query.toUpperCase() : "CERT-2026-MHA-9821",
+        certRef: searchQuery.toUpperCase().startsWith("CERT-") ? searchQuery.toUpperCase() : "CERT-2026-MHA-9821",
         issueDate: new Date().toLocaleDateString('en-IN') + " IST",
         caseId: "2026-0789",
         caseTitle: "Cyber Fraud & Financial Asset Siphoning Investigation",
@@ -30,8 +30,15 @@ export default function PublicVerificationView({ onShowToast }) {
         statutoryDeclaration: "Compliant with Section 65B of Indian Evidence Act (BSA 2023 Statutory Requirements)"
       });
 
-      onShowToast("Cryptographic Section 65B Certificate Verified: 100% Match ✓", "success");
-    }, 1000);
+      if (onShowToast) {
+        onShowToast("Cryptographic Section 65B Certificate Verified: 100% Match ✓", "success");
+      }
+    }, 800);
+  };
+
+  const handleSimulateQrScan = () => {
+    setQuery("CERT-2026-MHA-9821");
+    handleSearch();
   };
 
   return (
@@ -65,6 +72,17 @@ export default function PublicVerificationView({ onShowToast }) {
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.5rem', maxWidth: '640px', margin: '0.5rem auto 0 auto' }}>
           Independent statutory portal for Judicial Officers, Public Prosecutors, and Advocates to verify Section 65B certificates and SHA-256 evidence integrity against the immutable CaseVault ledger.
         </p>
+
+        <div style={{ marginTop: '1.25rem' }}>
+          <button
+            onClick={handleSimulateQrScan}
+            className="cv-btn cv-btn-primary"
+            style={{ fontWeight: 800, fontSize: '0.875rem', padding: '0.6rem 1.25rem' }}
+          >
+            <QrCode size={18} />
+            <span>Simulate Court 2D QR Code Scan</span>
+          </button>
+        </div>
       </div>
 
       {/* Verification Search Bar */}
