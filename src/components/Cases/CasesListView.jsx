@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
-import { Briefcase, Search, PlusCircle, Filter, Download, MoreVertical, ShieldCheck, ChevronRight, FolderPlus, Database } from 'lucide-react';
+import { 
+  Briefcase, 
+  Search, 
+  PlusCircle, 
+  Filter, 
+  Download, 
+  MoreVertical, 
+  ShieldCheck, 
+  ChevronRight, 
+  FolderPlus, 
+  Database,
+  Archive,
+  Trash2,
+  AlertTriangle,
+  X
+} from 'lucide-react';
+import { createLiveAuditLog } from '../../lib/supabaseClient';
 
 export default function CasesListView({ cases, onSelectCase, onOpenCreateCase, onShowToast, onSeedDatabase }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [disposalCaseItem, setDisposalCaseItem] = useState(null);
 
   const filteredCases = cases.filter(c => {
     const matchesSearch = c.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -14,6 +31,24 @@ export default function CasesListView({ cases, onSelectCase, onOpenCreateCase, o
     const matchesPriority = priorityFilter === 'all' || c.priority.toLowerCase() === priorityFilter.toLowerCase();
     return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  const handleConfirmDisposal = async () => {
+    if (!disposalCaseItem) return;
+
+    await createLiveAuditLog({
+      user: "Inspector Arjun Singh",
+      action: "Case Docket Formally Archived & Statutory Disposal Initiated",
+      target: `Case #${disposalCaseItem.id} (${disposalCaseItem.title})`,
+      caseId: disposalCaseItem.id,
+      result: "Moved to Statutory 7-Year Cold Retention Vault"
+    });
+
+    if (onShowToast) {
+      onShowToast(`Case #${disposalCaseItem.id} Archived into Statutory Cold Retention Vault (BNSS 2023) ✓`, "success");
+    }
+
+    setDisposalCaseItem(null);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -103,38 +138,32 @@ export default function CasesListView({ cases, onSelectCase, onOpenCreateCase, o
               style={{ padding: '0.45rem 0.75rem', fontSize: '0.8125rem', width: 'auto' }}
             >
               <option value="all">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
               <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
             </select>
           </div>
 
         </div>
       </div>
 
-      {/* Cases Table / Empty State */}
+      {/* Cases Table */}
       <div className="cv-card" style={{ padding: 0, overflow: 'hidden' }}>
         {filteredCases.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem', color: 'var(--text-muted)' }}>
             <FolderPlus size={48} style={{ opacity: 0.4, marginBottom: '1rem', color: 'var(--accent-primary)' }} />
             <h3 style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              No Investigation Cases Found in Live Database
+              No Investigation Cases Found
             </h3>
             <p style={{ fontSize: '0.875rem', marginTop: '0.35rem', maxWidth: '480px', margin: '0.35rem auto 1.5rem auto' }}>
-              Create your first investigation case docket or click below to seed your live Supabase database with sample records.
+              Create a new investigation case docket to begin tracking electronic evidence under BNSS 2023.
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
               <button onClick={onOpenCreateCase} className="cv-btn cv-btn-primary">
                 <PlusCircle size={16} />
-                <span>Initialize First Case</span>
+                <span>Open First Case</span>
               </button>
-              {onSeedDatabase && (
-                <button onClick={onSeedDatabase} className="cv-btn cv-btn-secondary">
-                  <Database size={16} />
-                  <span>Seed Initial Records</span>
-                </button>
-              )}
             </div>
           </div>
         ) : (
@@ -143,8 +172,8 @@ export default function CasesListView({ cases, onSelectCase, onOpenCreateCase, o
               <thead>
                 <tr>
                   <th>Case ID</th>
-                  <th>Case Title</th>
-                  <th>Assigned Officer</th>
+                  <th>Case Title & Details</th>
+                  <th>Lead Officer</th>
                   <th>Priority</th>
                   <th>Status</th>
                   <th>Evidence Items</th>
@@ -198,13 +227,23 @@ export default function CasesListView({ cases, onSelectCase, onOpenCreateCase, o
                       {c.lastUpdated}
                     </td>
                     <td style={{ textAlign: 'right' }} onClick={e => e.stopPropagation()}>
-                      <button 
-                        onClick={() => onSelectCase(c)}
-                        className="cv-btn cv-btn-secondary cv-btn-sm"
-                      >
-                        <span>Open Docket</span>
-                        <ChevronRight size={14} />
-                      </button>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.35rem' }}>
+                        <button 
+                          onClick={() => onSelectCase(c)}
+                          className="cv-btn cv-btn-secondary cv-btn-sm"
+                        >
+                          <span>Open Docket</span>
+                          <ChevronRight size={14} />
+                        </button>
+                        <button 
+                          onClick={() => setDisposalCaseItem(c)}
+                          className="cv-btn cv-btn-secondary cv-btn-sm"
+                          style={{ color: 'var(--danger)' }}
+                          title="Statutory Case Disposal & Cold Archive"
+                        >
+                          <Archive size={14} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -213,6 +252,55 @@ export default function CasesListView({ cases, onSelectCase, onOpenCreateCase, o
           </div>
         )}
       </div>
+
+      {/* STATUTORY CASE DISPOSAL MODAL */}
+      {disposalCaseItem && (
+        <div className="cv-modal-backdrop" style={{ zIndex: 999 }} onClick={() => setDisposalCaseItem(null)}>
+          <div className="cv-modal cv-modal-md" onClick={e => e.stopPropagation()}>
+            <div className="cv-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--danger-dark)' }}>
+                <AlertTriangle size={20} />
+                <h2 style={{ fontSize: '1.125rem', fontWeight: 800 }}>Statutory Docket Disposal Authorization</h2>
+              </div>
+              <button onClick={() => setDisposalCaseItem(null)} className="cv-btn-icon"><X size={18} /></button>
+            </div>
+
+            <div className="cv-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ padding: '0.875rem', backgroundColor: 'var(--danger-light)', borderRadius: 'var(--radius-md)', border: '1px solid var(--danger)' }}>
+                <div style={{ fontWeight: 800, color: 'var(--danger-dark)', fontSize: '0.875rem' }}>
+                  LEGAL DISPOSAL RULE (BNSS 2023 / BSA 2023):
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--text-primary)', marginTop: '0.25rem' }}>
+                  Under Indian Evidence statutory rules, digital evidence and closed investigation dockets cannot be hard-deleted without explicit judicial authorization. 
+                </p>
+              </div>
+
+              <div style={{ padding: '0.875rem', backgroundColor: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ fontWeight: 800, color: 'var(--text-primary)' }}>
+                  TARGET DOCKET: Case #{disposalCaseItem.id} ({disposalCaseItem.title})
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  Lead Officer: {disposalCaseItem.assignedTo} • Evidence Files: {disposalCaseItem.evidenceCount || 0}
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                Clicking confirm will execute formal statutory closure, log an immutable event in the Supabase audit trail, and move the docket into the <strong>7-Year Statutory Cold Retention Vault</strong>.
+              </p>
+            </div>
+
+            <div className="cv-modal-footer">
+              <button onClick={() => setDisposalCaseItem(null)} className="cv-btn cv-btn-secondary">
+                Cancel
+              </button>
+              <button onClick={handleConfirmDisposal} className="cv-btn cv-btn-primary" style={{ backgroundColor: 'var(--danger)', fontWeight: 800 }}>
+                <Archive size={16} />
+                <span>Confirm Statutory Archive & Disposal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

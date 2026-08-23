@@ -12,6 +12,7 @@ import IncidentResponseModal from './components/Modals/IncidentResponseModal';
 import MfaAuthModal from './components/Modals/MfaAuthModal';
 import PanchnamaModal from './components/Modals/PanchnamaModal';
 import NotificationsModal from './components/Modals/NotificationsModal';
+import AuthModal from './components/Modals/AuthModal';
 import AiAssistantDrawer from './components/Common/AiAssistantDrawer';
 
 import DashboardView from './components/Dashboard/DashboardView';
@@ -110,7 +111,8 @@ export default function App() {
   const [theme, setTheme] = useState('light');
   const [lang, setLang] = useState('en');
   
-  // Navigation & Layout states
+  // Navigation & Auth states
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [activeView, setActiveView] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -118,13 +120,25 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Data states (PURE LIVE DATABASE STATE)
-  const [user] = useState(INITIAL_USER);
+  const [user, setUser] = useState(INITIAL_USER);
   const [cases, setCases] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [activities, setActivities] = useState([]);
   const [securityLogs, setSecurityLogs] = useState(MOCK_SECURITY_LOGS);
-  const [systemNotifications, setSystemNotifications] = useState(INITIAL_SYSTEM_NOTIFICATIONS);
+  
+  // PERSISTENT SYSTEM NOTIFICATIONS STATE (Saved in localStorage)
+  const [systemNotifications, setSystemNotifications] = useState(() => {
+    const saved = localStorage.getItem('casevault_system_notifications');
+    if (saved !== null) {
+      try {
+        return JSON.parse(saved);
+      } catch (err) {
+        return INITIAL_SYSTEM_NOTIFICATIONS;
+      }
+    }
+    return INITIAL_SYSTEM_NOTIFICATIONS;
+  });
 
   // Selected item states
   const [selectedCase, setSelectedCase] = useState(null);
@@ -150,6 +164,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Sync systemNotifications to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('casevault_system_notifications', JSON.stringify(systemNotifications));
+  }, [systemNotifications]);
 
   // Load Live Data from Supabase Database on Mount
   useEffect(() => {
@@ -241,6 +260,34 @@ export default function App() {
       });
       showToast(`⚡ Connection Restored! Synchronized ${syncedCount || 1} pending offline field submissions to Supabase Vault ✓`, "success");
     }
+  };
+
+  // FULL WORKABLE SIGN OUT HANDLER WITH LIVE AUDIT LOGGING
+  const handleSignOut = async () => {
+    // Log to Supabase Audit Trail
+    await createLiveAuditLog({
+      user: user.name,
+      action: "Officer Session Terminated / Signed Out",
+      target: `${user.name} (${user.badgeNumber})`,
+      result: "Session Closed"
+    });
+
+    setIsAuthenticated(false);
+    showToast(`Officer ${user.name} session terminated ✓`, "info");
+  };
+
+  // FULL WORKABLE SIGN IN HANDLER WITH LIVE AUDIT LOGGING
+  const handleSignIn = async (userData) => {
+    if (userData) setUser(userData);
+    setIsAuthenticated(true);
+
+    // Log to Supabase Audit Trail
+    await createLiveAuditLog({
+      user: userData?.name || user.name,
+      action: "Officer Authenticated & Session Established",
+      target: `${userData?.name || user.name} (${userData?.badgeNumber || user.badgeNumber})`,
+      result: "Session Active (TLS 1.3 Encryption)"
+    });
   };
 
   const handleNavigateBack = () => {
@@ -569,6 +616,13 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Officer Authentication Modal Screen */}
+      <AuthModal
+        isOpen={!isAuthenticated}
+        onSignIn={handleSignIn}
+        onShowToast={showToast}
+      />
+
       {/* Sidebar Navigation */}
       <Sidebar 
         activeView={activeView}
@@ -608,6 +662,7 @@ export default function App() {
           onOpenAccessControl={() => { setSelectedCase(null); setActiveView('access-control'); }}
           onOpenAuditTrail={() => { setSelectedCase(null); setActiveView('audit-trail'); }}
           onOpenMfa={() => setIsMfaOpen(true)}
+          onSignOut={handleSignOut}
         />
 
         {/* Live Database Sync Indicator Banner */}
@@ -749,7 +804,8 @@ export default function App() {
         notifications={systemNotifications}
         onClearAll={() => {
           setSystemNotifications([]);
-          showToast("All security alerts and notifications cleared ✓", "info");
+          localStorage.setItem('casevault_system_notifications', JSON.stringify([]));
+          showToast("All security alerts and notifications permanently cleared ✓", "info");
         }}
         onShowToast={showToast}
       />
