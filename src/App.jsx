@@ -12,8 +12,6 @@ import IncidentResponseModal from './components/Modals/IncidentResponseModal';
 import MfaAuthModal from './components/Modals/MfaAuthModal';
 import PanchnamaModal from './components/Modals/PanchnamaModal';
 import NotificationsModal from './components/Modals/NotificationsModal';
-import ExportModal from './components/Modals/ExportModal';
-import SihJudgeTourModal from './components/Common/SihJudgeTourModal';
 import AiAssistantDrawer from './components/Common/AiAssistantDrawer';
 
 import DashboardView from './components/Dashboard/DashboardView';
@@ -38,7 +36,7 @@ import EvidenceLockerView from './components/Intake/EvidenceLockerView';
 
 import { INITIAL_USER, MOCK_SECURITY_LOGS } from './data/mockData';
 import { translations } from './lib/translations';
-import { getOfflineQueue, flushOfflineQueue, queueOfflineSubmission } from './lib/offlineQueue';
+import { flushOfflineQueue, queueOfflineSubmission } from './lib/offlineQueue';
 
 import { 
   supabase,
@@ -119,7 +117,7 @@ export default function App() {
   const [isSupabaseLive, setIsSupabaseLive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Data states (PURE LIVE DATABASE STATE - NO MOCK FALLBACKS)
+  // Data states (PURE LIVE DATABASE STATE)
   const [user] = useState(INITIAL_USER);
   const [cases, setCases] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -141,8 +139,6 @@ export default function App() {
   const [isMfaOpen, setIsMfaOpen] = useState(false);
   const [isPanchnamaOpen, setIsPanchnamaOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const [isJudgeTourOpen, setIsJudgeTourOpen] = useState(false);
   const [isAiAssistantOpen, setIsAiAssistantOpen] = useState(false);
   const [mfaActionTitle, setMfaActionTitle] = useState('Access Highly Restricted Evidence');
   const [pendingAction, setPendingAction] = useState(null);
@@ -711,7 +707,7 @@ export default function App() {
 
       <DocumentViewerModal 
         document={selectedDocument}
-        isOpen={Boolean(selectedDocument) && !isShareOpen && !isExportOpen}
+        isOpen={Boolean(selectedDocument) && !isShareOpen}
         onClose={() => setSelectedDocument(null)}
         onShowToast={showToast}
       />
@@ -719,13 +715,6 @@ export default function App() {
       <ShareDocumentModal 
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
-        document={selectedDocument}
-        onShowToast={showToast}
-      />
-
-      <ExportModal
-        isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
         document={selectedDocument}
         onShowToast={showToast}
       />
@@ -762,13 +751,6 @@ export default function App() {
           setSystemNotifications([]);
           showToast("All security alerts and notifications cleared ✓", "info");
         }}
-        onShowToast={showToast}
-      />
-
-      <SihJudgeTourModal
-        isOpen={isJudgeTourOpen}
-        onClose={() => setIsJudgeTourOpen(false)}
-        onChangeView={(v) => { setSelectedCase(null); setActiveView(v); }}
         onShowToast={showToast}
       />
 
