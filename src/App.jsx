@@ -14,6 +14,7 @@ import PanchnamaModal from './components/Modals/PanchnamaModal';
 import NotificationsModal from './components/Modals/NotificationsModal';
 import AuthModal from './components/Modals/AuthModal';
 import AiAssistantDrawer from './components/Common/AiAssistantDrawer';
+import LandingPage from './components/Landing/LandingPage';
 
 import DashboardView from './components/Dashboard/DashboardView';
 import CasesListView from './components/Cases/CasesListView';
@@ -111,6 +112,9 @@ export default function App() {
   const [theme, setTheme] = useState('light');
   const [lang, setLang] = useState('en');
   
+  // View Mode: 'landing' vs 'dashboard'
+  const [viewMode, setViewMode] = useState('landing');
+
   // Navigation & Auth states
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [activeView, setActiveView] = useState('dashboard');
@@ -280,6 +284,7 @@ export default function App() {
   const handleSignIn = async (userData) => {
     if (userData) setUser(userData);
     setIsAuthenticated(true);
+    setViewMode('dashboard');
 
     // Log to Supabase Audit Trail
     await createLiveAuditLog({
@@ -614,6 +619,25 @@ export default function App() {
     }
   };
 
+  // IF IN LANDING PAGE MODE
+  if (viewMode === 'landing') {
+    return (
+      <>
+        <LandingPage 
+          onLaunchDashboard={() => setViewMode('dashboard')}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          onShowToast={showToast}
+        />
+        <Toast 
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast({ message: '', type: 'success' })}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Officer Authentication Modal Screen */}
@@ -692,15 +716,25 @@ export default function App() {
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button
+              onClick={() => setViewMode('landing')}
+              className="cv-btn cv-btn-secondary cv-btn-sm"
+              style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', color: 'var(--accent-primary)', fontWeight: 800 }}
+              title="Return to Public Landing Page"
+            >
+              🌐 Landing Page
+            </button>
+
             <button
               onClick={() => setIsPanchnamaOpen(true)}
               className="cv-btn cv-btn-secondary cv-btn-sm"
-              style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', color: 'var(--accent-primary)' }}
+              style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}
               title="Generate Crime Scene Seizure Memo under BNSS 2023"
             >
-              📜 Generate Panchnama
+              📜 Panchnama
             </button>
+
             <button
               onClick={handleSeedDatabase}
               className="cv-btn cv-btn-secondary cv-btn-sm"
