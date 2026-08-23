@@ -1,65 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Bell, X, ShieldAlert, FileText, CheckCircle2, AlertTriangle, Info, Trash2, Filter } from 'lucide-react';
 
 export default function NotificationsModal({ isOpen, onClose, notifications = [], onClearAll, onShowToast }) {
   const [filterType, setFilterType] = useState('all');
-  const [notifList, setNotifList] = useState([]);
-
-  const defaultNotifs = [
-    {
-      id: "NOTIF-01",
-      category: "critical",
-      title: "🚨 Failed Login Threshold Exceeded",
-      detail: "5 consecutive failed authentication attempts detected for user 'officer_102'. Account temporarily locked.",
-      time: "10 mins ago",
-      icon: ShieldAlert,
-      badge: "Critical Alert"
-    },
-    {
-      id: "NOTIF-02",
-      category: "warning",
-      title: "🟠 Document Access Permission Requested",
-      detail: "Forensic Officer Dr. Raman requested elevated download access for Evidence_042.pdf in Case #2026-0789.",
-      time: "25 mins ago",
-      icon: AlertTriangle,
-      badge: "Pending Approval"
-    },
-    {
-      id: "NOTIF-03",
-      category: "info",
-      title: "🔵 New Digital Evidence Ingested",
-      detail: "FIR_Financial_Breach_Report.pdf uploaded by Inspector Arjun Singh with SHA-256 Lock.",
-      time: "1 hour ago",
-      icon: FileText,
-      badge: "Ingestion"
-    },
-    {
-      id: "NOTIF-04",
-      category: "success",
-      title: "🟢 SHA-256 File Integrity Verified",
-      detail: "Automated routine checksum verification passed with 100% match against CaseVault ledger.",
-      time: "2 hours ago",
-      icon: CheckCircle2,
-      badge: "Verified"
-    }
-  ];
-
-  useEffect(() => {
-    if (notifications && notifications.length > 0) {
-      setNotifList(notifications);
-    } else {
-      setNotifList(defaultNotifs);
-    }
-  }, [notifications, isOpen]);
 
   if (!isOpen) return null;
 
-  const filteredNotifs = notifList.filter(n => filterType === 'all' || n.category === filterType);
+  const filteredNotifs = notifications.filter(n => filterType === 'all' || n.category === filterType);
 
-  const handleClearAll = () => {
-    setNotifList([]);
-    if (onClearAll) onClearAll();
-    if (onShowToast) onShowToast("All notifications cleared ✓", "info");
+  const handleClearAllClick = () => {
+    if (onClearAll) {
+      onClearAll();
+    }
   };
 
   return (
@@ -121,7 +73,12 @@ export default function NotificationsModal({ isOpen, onClose, notifications = []
         <div className="cv-modal-body" style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {filteredNotifs.length > 0 ? (
             filteredNotifs.map(n => {
-              const Icon = n.icon || Bell;
+              const Icon = n.icon || (
+                n.category === 'critical' ? ShieldAlert :
+                n.category === 'warning' ? AlertTriangle :
+                n.category === 'success' ? CheckCircle2 : FileText
+              );
+
               const badgeClass = n.category === 'critical' ? 'cv-badge-red' :
                                 n.category === 'warning' ? 'cv-badge-amber' :
                                 n.category === 'success' ? 'cv-badge-emerald' : 'cv-badge-blue';
@@ -184,7 +141,12 @@ export default function NotificationsModal({ isOpen, onClose, notifications = []
 
         {/* Footer */}
         <div className="cv-modal-footer">
-          <button onClick={handleClearAll} className="cv-btn cv-btn-secondary">
+          <button 
+            onClick={handleClearAllClick} 
+            disabled={notifications.length === 0}
+            className="cv-btn cv-btn-secondary"
+            style={{ opacity: notifications.length === 0 ? 0.5 : 1, cursor: notifications.length === 0 ? 'not-allowed' : 'pointer' }}
+          >
             <Trash2 size={14} />
             <span>Clear Read</span>
           </button>

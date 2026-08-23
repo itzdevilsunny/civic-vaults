@@ -68,6 +68,41 @@ const VIEW_ORDER = [
   'access-control'
 ];
 
+const INITIAL_SYSTEM_NOTIFICATIONS = [
+  {
+    id: "NOTIF-01",
+    category: "critical",
+    title: "🚨 Failed Login Threshold Exceeded",
+    detail: "5 consecutive failed authentication attempts detected for user 'officer_102'. Account temporarily locked.",
+    time: "10 mins ago",
+    badge: "Critical Alert"
+  },
+  {
+    id: "NOTIF-02",
+    category: "warning",
+    title: "🟠 Document Access Permission Requested",
+    detail: "Forensic Officer Dr. Raman requested elevated download access for Evidence_042.pdf in Case #2026-0789.",
+    time: "25 mins ago",
+    badge: "Pending Approval"
+  },
+  {
+    id: "NOTIF-03",
+    category: "info",
+    title: "🔵 New Digital Evidence Ingested",
+    detail: "FIR_Financial_Breach_Report.pdf uploaded by Inspector Arjun Singh with SHA-256 Lock.",
+    time: "1 hour ago",
+    badge: "Ingestion"
+  },
+  {
+    id: "NOTIF-04",
+    category: "success",
+    title: "🟢 SHA-256 File Integrity Verified",
+    detail: "Automated routine checksum verification passed with 100% match against CaseVault ledger.",
+    time: "2 hours ago",
+    badge: "Verified"
+  }
+];
+
 export default function App() {
   // Theme state: DEFAULT THEME IS LIGHT THEME
   const [theme, setTheme] = useState('light');
@@ -87,6 +122,7 @@ export default function App() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [activities, setActivities] = useState([]);
   const [securityLogs, setSecurityLogs] = useState(MOCK_SECURITY_LOGS);
+  const [systemNotifications, setSystemNotifications] = useState(INITIAL_SYSTEM_NOTIFICATIONS);
 
   // Selected item states
   const [selectedCase, setSelectedCase] = useState(null);
@@ -295,6 +331,19 @@ export default function App() {
       badgeColor: "#6366f1"
     };
     setActivities([newAct, ...activities]);
+
+    // Add to system notifications
+    setSystemNotifications(prev => [
+      {
+        id: `NOTIF-${Date.now()}`,
+        category: "info",
+        title: "🔵 Evidence Ingested",
+        detail: `${newDoc.name} uploaded to Case #${newDoc.caseId} with SHA-256 Lock.`,
+        time: "Just now",
+        badge: "Ingestion"
+      },
+      ...prev
+    ]);
 
     showToast(`File ${newDoc.name} encrypted & ingested to Vault ✓`, "success");
 
@@ -532,7 +581,7 @@ export default function App() {
           isOffline={isOffline}
           onToggleOffline={handleToggleOffline}
           user={user}
-          unreadNotifications={activities.length + 1}
+          unreadNotifications={systemNotifications.length}
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           lang={lang}
           onToggleLang={handleToggleLang}
@@ -684,6 +733,11 @@ export default function App() {
       <NotificationsModal
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
+        notifications={systemNotifications}
+        onClearAll={() => {
+          setSystemNotifications([]);
+          showToast("All security alerts and notifications cleared ✓", "info");
+        }}
         onShowToast={showToast}
       />
 
